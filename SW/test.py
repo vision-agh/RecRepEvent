@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from models.my_gru import MyGRUCell
 
-torch.manual_seed(0)
+torch.manual_seed(1)
 
 model = MyGRUCell(input_size=2, hidden_size=12, num_bits=16)
 
