@@ -230,6 +230,7 @@ class MyGRUCell(nn.Module):
         z_h = FakeQuantize.apply(z_h, self.output_observer_z_h)
 
         new_h = z_n + z_h
+        self.hidden_observer.update(new_h)
         new_h = FakeQuantize.apply(new_h, self.hidden_observer)
 
         return new_h
@@ -349,6 +350,12 @@ class MyGRUCell(nn.Module):
         z_h = z_h.clamp(0, 2**self.output_observer_z_h.num_bits - 1)
 
         # New hidden state
+        scale_new_h_zn = self.output_observer_z_n.scale / self.hidden_observer.scale
+        scale_new_h_zh = self.output_observer_z_h.scale / self.hidden_observer.scale
+        new_h = (z_n - self.output_observer_z_n.zero_point) * scale_new_h_zn \
+                + (z_h - self.output_observer_z_h.zero_point) * scale_new_h_zh
+        new_h = new_h.round()
+        new_h = new_h + self.hidden_observer.zero_point
+        new_h = new_h.clamp(0, 2**self.hidden_observer.num_bits - 1)
 
-
-        return self.hidden_observer.dequantize_tensor(z_n + z_h)
+        return self.hidden_observer.dequantize_tensor(new_h)
