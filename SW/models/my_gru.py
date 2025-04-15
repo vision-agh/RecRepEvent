@@ -146,31 +146,33 @@ class MyGRUCell(nn.Module):
 
         # Reset gate
         r = self.output_linear_observer.quantize_tensor(i_r) \
-             + self.output_linear_observer.quantize_tensor(h_r) \
-             - self.output_linear_observer.zero_point
+            + self.output_linear_observer.quantize_tensor(h_r)
         
         in_vec = torch.arange(0, 2**(self.output_linear_observer.num_bits+1), dtype=torch.float32)
         in_vec = dequantize_tensor(in_vec,
                                 self.output_linear_observer.scale, 
-                                self.output_linear_observer.zero_point)
+                                self.output_linear_observer.zero_point * 2)
+
         sigmoid_r = torch.sigmoid(in_vec)
-        self.output_observer_sigmoid_r.update(sigmoid_r)
-        self.lut_sigmoid_r = self.output_observer_sigmoid_r.quantize_tensor(sigmoid_r)
+        self.output_observer_sigmoid_r.update(torch.tensor([0.0, 1.0]))
+        self.lut_sigmoid_r = quantize_tensor(sigmoid_r,
+                                self.output_observer_sigmoid_r.scale, 
+                                self.output_observer_sigmoid_r.zero_point,
+                                num_bits=self.output_observer_sigmoid_r.num_bits)
         sigmoid_r = FakeQuantize.apply(sigmoid_r, self.output_observer_sigmoid_r)
 
         r = sigmoid_r[r.long()]
 
         # Update gate
         z = self.output_linear_observer.quantize_tensor(i_z) \
-             + self.output_linear_observer.quantize_tensor(h_z) \
-             - self.output_linear_observer.zero_point
+            + self.output_linear_observer.quantize_tensor(h_z)
         
         in_vec = torch.arange(0, 2**(self.output_linear_observer.num_bits+1), dtype=torch.float32)
         in_vec = dequantize_tensor(in_vec,
                                 self.output_linear_observer.scale, 
-                                self.output_linear_observer.zero_point)
+                                self.output_linear_observer.zero_point * 2)
         sigmoid_z = torch.sigmoid(in_vec)
-        self.output_observer_sigmoid_z.update(sigmoid_z)
+        self.output_observer_sigmoid_z.update(torch.tensor([0.0, 1.0]))
         self.lut_sigmoid_z = self.output_observer_sigmoid_z.quantize_tensor(sigmoid_z)
         sigmoid_z = FakeQuantize.apply(sigmoid_z, self.output_observer_sigmoid_z)
 
@@ -179,6 +181,7 @@ class MyGRUCell(nn.Module):
         # New gate multiplication
         r_hn = r * h_n
         self.output_observer_r_hn.update(r_hn)
+        self.output_observer_r_hn.update(i_n)
         r_hn = FakeQuantize.apply(r_hn, self.output_observer_r_hn)
 
         # New gate intermediate computation
@@ -188,16 +191,15 @@ class MyGRUCell(nn.Module):
         i_n = i_n + self.output_observer_r_hn.zero_point
         i_n = i_n.clamp(0, 2**self.output_observer_r_hn.num_bits - 1)
         i_n = self.output_observer_r_hn.dequantize_tensor(i_n)
-
-        n = r_hn + i_n
         
         # New gate
-        n = self.output_observer_r_hn.quantize_tensor(n)
+        n = self.output_observer_r_hn.quantize_tensor(r_hn) \
+            + self.output_observer_r_hn.quantize_tensor(i_n)
         
         in_vec = torch.arange(0, 2**(self.output_observer_r_hn.num_bits+1), dtype=torch.float32)
         in_vec = dequantize_tensor(in_vec,
                                 self.output_observer_r_hn.scale, 
-                                self.output_observer_r_hn.zero_point)
+                                self.output_observer_r_hn.zero_point  * 2)
         tanh_n = torch.tanh(in_vec)
         self.output_observer_tanh_n.update(tanh_n)
         tanh_n = FakeQuantize.apply(tanh_n, self.output_observer_tanh_n)
@@ -242,19 +244,18 @@ class MyGRUCell(nn.Module):
         Quantized forward pass of the GRU cell.
         Args:
             x (torch.Tensor): Input tensor of shape (batch_size, input_size).
-            h (torch.Tensor): Hidden state tensor of shape (batch_size, hidden_size).
+            h (torch.Tensor): Hidden state tensor of shape (batch_size, hidden_size) (quantised).
         Returns:
             torch.Tensor: New hidden state tensor of shape (batch_size, hidden_size).
         """
-        # Quantize the input and hidden state
+        # Quantize the input
         x = self.input_observer.quantize_tensor(x)
-        h = self.hidden_observer.quantize_tensor(h)
 
         # Quantize the weights and compute the input layer
-
         # Weights quantization
         q_weight_ih = self.weight_ih_observer.quantize_tensor(self.linear_ih.weight) \
-                        - self.weight_ih_observer.zero_point
+                                    - self.weight_ih_observer.zero_point
+        
         q_bias_ih = quantize_tensor(self.linear_ih.bias, 
                                     scale=self.weight_ih_observer.scale * self.input_observer.scale,
                                     zero_point=0,
@@ -262,34 +263,35 @@ class MyGRUCell(nn.Module):
                                     signed=True)
 
         scale_ih = (self.weight_ih_observer.scale * self.input_observer.scale) \
-                    / self.output_linear_observer.scale
+                                    / self.output_linear_observer.scale
         
         # Compute the input layer
         gate_x = F.linear(x - self.input_observer.zero_point, 
-                            q_weight_ih, 
-                            q_bias_ih)
+                                    q_weight_ih, 
+                                    q_bias_ih)
 
         gate_x = (gate_x * scale_ih).round()
         gate_x = gate_x + self.output_linear_observer.zero_point
         gate_x = gate_x.clamp(0, 2**self.output_linear_observer.num_bits - 1)
 
         # Quantize the weights and compute the hidden layer
-
         # Weights quantization
         q_weight_hh = self.weight_hh_observer.quantize_tensor(self.linear_hh.weight) \
-                        - self.weight_hh_observer.zero_point
+                                    - self.weight_hh_observer.zero_point
+        
         q_bias_hh = quantize_tensor(self.linear_hh.bias, 
                                     scale=self.weight_hh_observer.scale * self.hidden_observer.scale,
                                     zero_point=0,
                                     num_bits=32,
                                     signed=True)
+        
         scale_hh = (self.weight_hh_observer.scale * self.hidden_observer.scale) \
                     / self.output_linear_observer.scale
         
         # Compute the hidden layer
         gate_h = F.linear(h - self.hidden_observer.zero_point, 
-                            q_weight_hh, 
-                            q_bias_hh)
+                                    q_weight_hh, 
+                                    q_bias_hh)
         gate_h = (gate_h * scale_hh).round()
         gate_h = gate_h + self.output_linear_observer.zero_point
         gate_h = gate_h.clamp(0, 2**self.output_linear_observer.num_bits - 1)
@@ -299,11 +301,11 @@ class MyGRUCell(nn.Module):
         h_r, h_z, h_n = gate_h.chunk(3, 1)
 
         # Reset gate
-        r = (i_r + h_r - self.output_linear_observer.zero_point).int()
+        r = (i_r + h_r).long()
         r = self.lut_sigmoid_r[r]
 
         # Update gate
-        z = (i_z + h_z - self.output_linear_observer.zero_point).int()
+        z = (i_z + h_z).long()
         z = self.lut_sigmoid_z[z]
 
         # New gate multiplication
@@ -321,8 +323,8 @@ class MyGRUCell(nn.Module):
         i_n = i_n + self.output_observer_r_hn.zero_point
         i_n = i_n.clamp(0, 2**self.output_observer_r_hn.num_bits - 1)
 
-        n = r_hn + i_n - self.output_observer_r_hn.zero_point
-        n = self.lut_tanh_n[n.int()]
+        n = (r_hn + i_n).long()
+        n = self.lut_tanh_n[n]
 
         # New hidden state
         # Difference
@@ -358,4 +360,5 @@ class MyGRUCell(nn.Module):
         new_h = new_h + self.hidden_observer.zero_point
         new_h = new_h.clamp(0, 2**self.hidden_observer.num_bits - 1)
 
-        return self.hidden_observer.dequantize_tensor(new_h)
+        # return self.hidden_observer.dequantize_tensor(new_h)
+        return new_h
