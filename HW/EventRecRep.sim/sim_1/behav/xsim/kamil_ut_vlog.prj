@@ -1,0 +1,22 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  \
+"../../../../EventRecRep.gen/sources_1/ip/dist_mem_gen_2/sim/dist_mem_gen_2.v" \
+"../../../../EventRecRep.gen/sources_1/ip/dist_mem_gen_3/sim/dist_mem_gen_3.v" \
+"../../../../EventRecRep.gen/sources_1/ip/dist_mem_gen_1/sim/dist_mem_gen_1.v" \
+"../../../../EventRecRep.gen/sources_1/ip/dist_mem_gen_0/sim/dist_mem_gen_0.v" \
+
+sv xil_defaultlib  \
+"../../../../EventRecRep.srcs/sources_1/new/add_vectors_rescale.sv" \
+"../../../../EventRecRep.srcs/sources_1/new/delay_module.sv" \
+"../../../../EventRecRep.srcs/sources_1/new/delay_single.sv" \
+"../../../../EventRecRep.srcs/sources_1/new/matrix_multiplication.sv" \
+"../../../../EventRecRep.srcs/sources_1/new/memory.sv" \
+"../../../../EventRecRep.srcs/sources_1/new/top.sv" \
+"../../../../EventRecRep.srcs/sources_1/new/vector_multiplication.sv" \
+"../../../../EventRecRep.srcs/sim_1/new/test_top.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort
