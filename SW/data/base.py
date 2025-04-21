@@ -65,7 +65,7 @@ class EventDataset(Dataset):
         # cut window from events of shape (64, 64) randomly
         # assert there is at least one event in the window
 
-        cs = 64
+        cs = 32
         x1 = np.random.randint(0, self.cfg["sensor_size"]["W"] - cs + 1)
         y1 = np.random.randint(0, self.cfg["sensor_size"]["H"] - cs + 1)
         x2, y2 = x1 + cs, y1 + cs
