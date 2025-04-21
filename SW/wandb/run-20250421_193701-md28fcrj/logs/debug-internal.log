@@ -1,0 +1,7 @@
+{"time":"2025-04-21T19:37:01.194185321+02:00","level":"INFO","msg":"stream: starting","core version":"0.19.9","symlink path":"wandb/run-20250421_193701-md28fcrj/logs/debug-core.log"}
+{"time":"2025-04-21T19:37:01.4589839+02:00","level":"INFO","msg":"created new stream","id":"md28fcrj"}
+{"time":"2025-04-21T19:37:01.459003702+02:00","level":"INFO","msg":"stream: started","id":"md28fcrj"}
+{"time":"2025-04-21T19:37:01.459072619+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"md28fcrj"}
+{"time":"2025-04-21T19:37:01.459110568+02:00","level":"INFO","msg":"handler: started","stream_id":"md28fcrj"}
+{"time":"2025-04-21T19:37:01.45913557+02:00","level":"INFO","msg":"sender: started","stream_id":"md28fcrj"}
+{"time":"2025-04-21T19:37:01.879140776+02:00","level":"INFO","msg":"Starting system monitor"}

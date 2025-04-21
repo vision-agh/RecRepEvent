@@ -16,5 +16,7 @@ RUN pip install --pre torch torchvision torchaudio --index-url https://download.
 
 RUN pip install lightning wandb
 
+RUN pip install opencv-python matplotlib tqdm h5py hdf5plugin
+
 WORKDIR /workspace
 COPY . /workspace

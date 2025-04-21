@@ -1,0 +1,32 @@
+name: Gen1
+data_dir: /home/imperator/Datasets/gen1
+dir_to_save: /home/imperator/Datasets/gen1_processed
+sensor_size:
+  W: 304
+  H: 240
+image_size:
+  W: 224
+  H: 224
+time_window: 300000
+
+encoder:
+  rnn_type: MyGRU
+  input_size: 1         # 1 if only timestamps, 2 if timestamps + polarity
+  hidden_size: [12, 12]
+decoder:
+  rnn_type: MyGRU
+  hidden_size: [12, 12]
+
+train_encoder:
+  scale_time_loss: 1
+  scale_polarity_loss: 0
+  learning_rate: 0.001
+  weight_decay: 0.0001
+
+
+apply_psee_bbox_filter: true
+apply_faulty_bbox_filter: true
+
+num_processes: 8    # number of processes to use for data generation
+num_workers: 1      # number of workers to use for data loading
+batch_size: 1

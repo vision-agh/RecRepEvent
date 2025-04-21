@@ -1,0 +1,15 @@
+{"time":"2025-04-21T18:59:20.497558469+02:00","level":"INFO","msg":"stream: starting","core version":"0.19.9","symlink path":"wandb/run-20250421_185920-xms4g2b1/logs/debug-core.log"}
+{"time":"2025-04-21T18:59:20.762546721+02:00","level":"INFO","msg":"created new stream","id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:20.762568813+02:00","level":"INFO","msg":"stream: started","id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:20.762651896+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:20.762708983+02:00","level":"INFO","msg":"sender: started","stream_id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:20.762748317+02:00","level":"INFO","msg":"handler: started","stream_id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:21.180983962+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-04-21T18:59:22.469127416+02:00","level":"INFO","msg":"stream: closing","id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:22.469142354+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-04-21T18:59:22.469163053+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-04-21T18:59:23.069922694+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-04-21T18:59:23.276053966+02:00","level":"INFO","msg":"handler: closed","stream_id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:23.276071085+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:23.276085034+02:00","level":"INFO","msg":"sender: closed","stream_id":"xms4g2b1"}
+{"time":"2025-04-21T18:59:23.276097576+02:00","level":"INFO","msg":"stream: closed","id":"xms4g2b1"}

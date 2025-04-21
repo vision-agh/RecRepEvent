@@ -1,0 +1,7 @@
+{"time":"2025-04-21T19:38:22.281085834+02:00","level":"INFO","msg":"stream: starting","core version":"0.19.9","symlink path":"wandb/run-20250421_193822-lgi4v5b1/logs/debug-core.log"}
+{"time":"2025-04-21T19:38:22.561738433+02:00","level":"INFO","msg":"created new stream","id":"lgi4v5b1"}
+{"time":"2025-04-21T19:38:22.561759994+02:00","level":"INFO","msg":"stream: started","id":"lgi4v5b1"}
+{"time":"2025-04-21T19:38:22.56184104+02:00","level":"INFO","msg":"sender: started","stream_id":"lgi4v5b1"}
+{"time":"2025-04-21T19:38:22.561845075+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"lgi4v5b1"}
+{"time":"2025-04-21T19:38:22.561862089+02:00","level":"INFO","msg":"handler: started","stream_id":"lgi4v5b1"}
+{"time":"2025-04-21T19:38:23.016396005+02:00","level":"INFO","msg":"Starting system monitor"}

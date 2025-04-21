@@ -1,0 +1,15 @@
+{"time":"2025-04-21T19:17:48.780938492+02:00","level":"INFO","msg":"stream: starting","core version":"0.19.9","symlink path":"wandb/run-20250421_191748-gabo28ii/logs/debug-core.log"}
+{"time":"2025-04-21T19:17:49.058021102+02:00","level":"INFO","msg":"created new stream","id":"gabo28ii"}
+{"time":"2025-04-21T19:17:49.058039383+02:00","level":"INFO","msg":"stream: started","id":"gabo28ii"}
+{"time":"2025-04-21T19:17:49.058076511+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"gabo28ii"}
+{"time":"2025-04-21T19:17:49.058125446+02:00","level":"INFO","msg":"sender: started","stream_id":"gabo28ii"}
+{"time":"2025-04-21T19:17:49.058170033+02:00","level":"INFO","msg":"handler: started","stream_id":"gabo28ii"}
+{"time":"2025-04-21T19:17:49.516122309+02:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-04-21T19:18:03.547739859+02:00","level":"INFO","msg":"stream: closing","id":"gabo28ii"}
+{"time":"2025-04-21T19:18:03.547753058+02:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-04-21T19:18:03.54778105+02:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-04-21T19:18:04.140241078+02:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-04-21T19:18:04.437649338+02:00","level":"INFO","msg":"handler: closed","stream_id":"gabo28ii"}
+{"time":"2025-04-21T19:18:04.437672301+02:00","level":"INFO","msg":"writer: Close: closed","stream_id":"gabo28ii"}
+{"time":"2025-04-21T19:18:04.437699399+02:00","level":"INFO","msg":"sender: closed","stream_id":"gabo28ii"}
+{"time":"2025-04-21T19:18:04.437703262+02:00","level":"INFO","msg":"stream: closed","id":"gabo28ii"}

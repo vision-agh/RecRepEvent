@@ -1,0 +1,7 @@
+{"time":"2025-04-21T19:19:21.586938372+02:00","level":"INFO","msg":"stream: starting","core version":"0.19.9","symlink path":"wandb/run-20250421_191921-tj9odgno/logs/debug-core.log"}
+{"time":"2025-04-21T19:19:21.852684638+02:00","level":"INFO","msg":"created new stream","id":"tj9odgno"}
+{"time":"2025-04-21T19:19:21.852703024+02:00","level":"INFO","msg":"stream: started","id":"tj9odgno"}
+{"time":"2025-04-21T19:19:21.852762856+02:00","level":"INFO","msg":"writer: Do: started","stream_id":"tj9odgno"}
+{"time":"2025-04-21T19:19:21.852834557+02:00","level":"INFO","msg":"sender: started","stream_id":"tj9odgno"}
+{"time":"2025-04-21T19:19:21.852826197+02:00","level":"INFO","msg":"handler: started","stream_id":"tj9odgno"}
+{"time":"2025-04-21T19:19:22.320398395+02:00","level":"INFO","msg":"Starting system monitor"}

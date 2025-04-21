@@ -14,12 +14,20 @@ class Encoder(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        h1: torch.Tensor,
-        h2: torch.Tensor,
-        h3: torch.Tensor,
+        h1: torch.Tensor = None,
+        h2: torch.Tensor = None,
+        h3: torch.Tensor = None,
     ) -> torch.Tensor:
         
+        if h1 is None:
+            h1 = torch.zeros(x.size(1), self.hidden_size, device=x.device)
+        if h2 is None:
+            h2 = torch.zeros(x.size(1), self.hidden_size, device=x.device)
+        # if h3 is None:
+        #     h3 = torch.zeros(x.size(1), self.hidden_size, device='cuda')
+        
         # x: (L, B, D), h1/h2: (B, H)
+
         for l in range(x.size(0)):
             x_in = x[l, :, :]
             h1 = self.gru1(x_in, h1)
