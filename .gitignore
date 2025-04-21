@@ -1,6 +1,7 @@
 # User defined files
 # Ignore folder SW/wandb
-/SW/wandb/
+SW/wandb/
+SW/Reccurent\ Event\ Representation/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
