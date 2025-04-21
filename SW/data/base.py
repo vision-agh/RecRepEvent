@@ -75,7 +75,7 @@ class EventDataset(Dataset):
         mask_crop = m_x & m_y
 
         events_crop = events_all[mask_crop]
-        if events_crop.shape[0] == 0:
+        if events_crop.shape[0] < 2 or ( events_crop[:, 1].max() - events_crop[:, 1].min() == 0 and events_crop[:, 2].max() - events_crop[:, 2].min() == 0 ):
             # fallback to first 1000 events if crop was empty
             events_crop = events_all[:1000]
 

@@ -40,7 +40,7 @@ class Decoder(nn.Module):
         # initialize all GRU hidden states to zero
         h1 = torch.zeros(B, self.hidden_size, device=device)
         h2 = torch.zeros(B, self.hidden_size, device=device)
-        # h3 = torch.zeros(B, self.hidden_size, device=device)
+        h3 = torch.zeros(B, self.hidden_size, device=device)
 
         # buffer to collect all outputs
         out = torch.zeros(length, B, self.output_size, device=device)
@@ -51,11 +51,11 @@ class Decoder(nn.Module):
             # update each GRU layer
             h1 = self.gru1(x_in, h1)
             h2 = self.gru2(h1, h2)
-            # h3 = self.gru3(h2, h3)
+            h3 = self.gru3(h2, h3)
 
             # decode event
-            y_t = self.linear(h2)              # (B, output_size)
-            out[t, :, :] = y_t.cpu()                 # write into buffer
+            y_t = self.linear(h3)              # (B, output_size)
+            out[t, :, :] = y_t                 # write into buffer
 
             # prepare next input by projecting back into hidden‐space
             x_in = self.output2hidden(y_t)     # (B, hidden_size)

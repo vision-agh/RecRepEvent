@@ -27,6 +27,7 @@ class AutoEncoder(L.LightningModule):
         embeddings = self.encoder(events)
         output = self.decoder(embeddings, events.size(0))
 
+        self.embedding = embeddings
         loss, loss_t, loss_p = self._loss_fun(events, output, mask=mask)
         return loss, loss_t, loss_p, events, output
     
@@ -50,7 +51,7 @@ class AutoEncoder(L.LightningModule):
         self.log('train_loss_time', loss_time)
         self.log('train_loss_pol', loss_pol)
         return loss
-    
+        
     def validation_step(self, batch, batch_idx):
         loss, loss_time, loss_pol, input, output = self.forward(batch)
         self.log('val_loss', loss)

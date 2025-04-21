@@ -20,15 +20,15 @@ def main(args):
 
     model = AutoEncoder(cfg=config)
 
-    wandb_logger = WandbLogger(project=f"Recurrent Event Representation", 
+    wandb_logger = WandbLogger(project=f"Recurrent_Event_Representation", 
                                name=f"first_run")
     wandb_logger.watch(model)
 
     trainer = L.Trainer(max_epochs=100, 
                         logger=wandb_logger, 
                         log_every_n_steps=1,
-                        limit_train_batches=1000,
-                        limit_val_batches=1000)
+                        limit_train_batches=100,
+                        limit_val_batches=100)
     
     trainer.fit(model, dm)
 
