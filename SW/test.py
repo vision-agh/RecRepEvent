@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from models.my_gru import MyGRUCell
+from models.my_layers.my_gru import MyGRUCell
 
 torch.manual_seed(1)
 

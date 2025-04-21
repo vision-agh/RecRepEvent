@@ -1,8 +1,20 @@
-FROM pytorch/pytorch:2.4.1-cuda12.4-cudnn9-devel
+FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04
 
-# install cugraph
-RUN pip install torch_geometric
-RUN pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.4.0+cu124.html
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    python3-dev \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install PyTorch nightly
+RUN pip install --upgrade pip setuptools wheel
+
+RUN pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
+
 RUN pip install lightning wandb
 
-CMD [ "bash" ]
+WORKDIR /workspace
+COPY . /workspace

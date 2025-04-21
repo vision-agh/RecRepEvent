@@ -15,6 +15,10 @@ module kamil_ut;
     logic                               read = '0;
     
     logic [8-1:0] t_in = 0;
+    logic [8-1:0] x_in = 0;
+    logic [8-1:0] y_in = 0;
+    
+    
     always begin
         clk = 0;
         forever #5 clk = ~clk; 
@@ -23,17 +27,36 @@ module kamil_ut;
     always @(posedge clk) begin
         cnt <= cnt + 1;
         is_valid <= 1'b0;
+        
         if (cnt == 20) begin
-            t_in <= t;
+            t_in <= 129;
+            x_in <= 0;
+            y_in <= 0;
             is_valid <= 1'b1;
         end
+        
+        if (cnt == 22) begin
+            t_in <= 130;
+            x_in <= 1;
+            y_in <= 1;
+            is_valid <= 1'b1;
+        end
+        
+        if (cnt == 24) begin
+            t_in <= 131;
+            x_in <= 2;
+            y_in <= 2;
+            is_valid <= 1'b1;
+        end
+        
+        
     end
 
     top uut (
         .clk(clk),
         .reset(rst),
-        .x_coord(x),
-        .y_coord(y),
+        .x_coord(x_in),
+        .y_coord(y_in),
         .timestamp(t_in),
         .is_valid(is_valid),
         .readback_output(r_output),
