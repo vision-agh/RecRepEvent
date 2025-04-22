@@ -35,3 +35,4 @@ conda create -n dvs_rec python=3.12
 pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
 conda install h5py 
 conda install blosc-hdf5-plugin lightning -c conda-forge
+pip install omegaconf
