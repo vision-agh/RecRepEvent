@@ -76,7 +76,7 @@ def main(args):
                 one_channel[y:y+h, x+w] = 255
                 one_channel[y, x:x+w] = 255
                 one_channel[y+h, x:x+w] = 255
-
+                print(b[4])
             imgs[j].set_data(one_channel)
             imgs[j].set_clim(vmin=0, vmax=255)  # opcjonalnie – jeśli wartości się zmieniają dynamicznie
 

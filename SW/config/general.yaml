@@ -33,4 +33,4 @@ apply_faulty_bbox_filter: true
 
 num_processes: 8    # number of processes to use for data generation
 num_workers: 1      # number of workers to use for data loading
-batch_size: 1
+batch_size: 4

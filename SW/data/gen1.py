@@ -171,6 +171,10 @@ class Gen1(L.LightningDataModule):
 
     def collate_fn(self, batch):
         evs, masks, counts, bboxes = zip(*batch)
+
+        # TODO: create batch of events, masks, counts and bboxes
+        # 
+
         return {
             "packed_events":    torch.stack(evs),
             "mask":             torch.stack(masks),
