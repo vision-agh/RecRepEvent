@@ -170,16 +170,25 @@ class Gen1(L.LightningDataModule):
         self.test_data  = EventDataset(base / "test.h5",  self.cfg)
 
     def collate_fn(self, batch):
-        evs, masks, counts, bboxes = zip(*batch)
+        packed_events, masks, counts, bbs = zip(*batch)
 
-        # TODO: create batch of events, masks, counts and bboxes
-        # 
+        bboxes = []
+        batch_idx = []
 
+        for idx, bb in enumerate(bbs):
+            num_bboxes = bb.size(0)
+            bboxes.append(bb)
+            batch_idx.append(torch.full((num_bboxes,), idx, dtype=torch.long))
+
+        batch_bboxes = torch.cat(bboxes, dim=0)          # [sum_num_bboxes, 5]
+        batch_indices = torch.cat(batch_idx, dim=0)     # [sum_num_bboxes]
+        
         return {
-            "packed_events":    torch.stack(evs),
-            "mask":             torch.stack(masks),
-            "counts_per_pixel": torch.stack(counts),
-            "bboxes":           torch.stack(bboxes)
+            "packed_events":    packed_events,
+            "mask":             masks,
+            "counts_per_pixel": counts,
+            "bboxes":           batch_bboxes,
+            "batch_bbox":       batch_indices,
         }
 
     def _make_loader(self, ds, shuffle=False):

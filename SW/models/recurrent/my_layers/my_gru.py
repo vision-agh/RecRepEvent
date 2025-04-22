@@ -150,7 +150,7 @@ class MyGRUCell(nn.Module):
         r = self.output_linear_observer.quantize_tensor(i_r) \
             + self.output_linear_observer.quantize_tensor(h_r)
         
-        in_vec = torch.arange(0, 2**(self.output_linear_observer.num_bits+1), dtype=torch.float32)
+        in_vec = torch.arange(0, 2**(self.output_linear_observer.num_bits+1), dtype=torch.float32, device=x.device)
         in_vec = dequantize_tensor(in_vec,
                                 self.output_linear_observer.scale, 
                                 self.output_linear_observer.zero_point * 2)
@@ -169,7 +169,7 @@ class MyGRUCell(nn.Module):
         z = self.output_linear_observer.quantize_tensor(i_z) \
             + self.output_linear_observer.quantize_tensor(h_z)
         
-        in_vec = torch.arange(0, 2**(self.output_linear_observer.num_bits+1), dtype=torch.float32)
+        in_vec = torch.arange(0, 2**(self.output_linear_observer.num_bits+1), dtype=torch.float32, device=x.device)
         in_vec = dequantize_tensor(in_vec,
                                 self.output_linear_observer.scale, 
                                 self.output_linear_observer.zero_point * 2)
@@ -187,7 +187,7 @@ class MyGRUCell(nn.Module):
         r_hn = FakeQuantize.apply(r_hn, self.output_observer_r_hn)
 
         # New gate intermediate computation
-        in_vec = torch.arange(0, 2**(self.output_observer_r_hn.num_bits), dtype=torch.float32)
+        in_vec = torch.arange(0, 2**(self.output_observer_r_hn.num_bits), dtype=torch.float32, device=x.device)
         in_vec = in_vec - self.output_linear_observer.zero_point
         in_vec = (in_vec * (self.output_linear_observer.scale / self.output_observer_r_hn.scale)).round()
         in_vec = in_vec + self.output_observer_r_hn.zero_point
@@ -204,7 +204,7 @@ class MyGRUCell(nn.Module):
         n = self.output_observer_r_hn.quantize_tensor(r_hn) \
             + self.output_observer_r_hn.quantize_tensor(i_n)
         
-        in_vec = torch.arange(0, 2**(self.output_observer_r_hn.num_bits+1), dtype=torch.float32)
+        in_vec = torch.arange(0, 2**(self.output_observer_r_hn.num_bits+1), dtype=torch.float32, device=x.device)
         in_vec = dequantize_tensor(in_vec,
                                 self.output_observer_r_hn.scale, 
                                 self.output_observer_r_hn.zero_point  * 2)

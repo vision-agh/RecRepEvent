@@ -19,6 +19,7 @@ def main(args):
 
     config["remove_empty_pixels"] = False
     config["crop_events_spatially"] = False
+    config["batch_size"] = 1
 
     dm = Gen1(cfg=config)
     dm.setup()
@@ -26,7 +27,7 @@ def main(args):
     model = Encoder(input_size=2, hidden_size=12, num_bits=8).eval().cuda()
     model.compile()
 
-    checkpoint = torch.load("checkpoints/my_gru_checkpoint-v7.ckpt")
+    checkpoint = torch.load("checkpoints/my_gru_checkpoint-v7.ckpt", weights_only=True)
     encoder_weights = {k.replace("encoder.", ""): v for k, v in checkpoint["state_dict"].items() if k.startswith("encoder.")}
     model.load_state_dict(encoder_weights, strict=False)
 
@@ -48,9 +49,9 @@ def main(args):
     plt.show()
         
     for i, batch in enumerate(dm.val_dataloader()):
-        events = batch['packed_events'].squeeze(0)
-        counts_per_pixel = batch['counts_per_pixel'].squeeze(0)
-        bboxes = batch['bboxes'].squeeze(0)
+        events = batch['packed_events'][0]
+        counts_per_pixel = batch['counts_per_pixel'][0]
+        bboxes = batch['bboxes']
 
         embeddings = model(events.cuda())
 
@@ -76,13 +77,12 @@ def main(args):
                 one_channel[y:y+h, x+w] = 255
                 one_channel[y, x:x+w] = 255
                 one_channel[y+h, x:x+w] = 255
-                print(b[4])
             imgs[j].set_data(one_channel)
             imgs[j].set_clim(vmin=0, vmax=255)  # opcjonalnie – jeśli wartości się zmieniają dynamicznie
 
         fig.canvas.draw()
         fig.canvas.flush_events()
-        plt.pause(.1)
+        plt.pause(.001)
 
 
 

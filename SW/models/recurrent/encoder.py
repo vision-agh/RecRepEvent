@@ -35,6 +35,28 @@ class Encoder(nn.Module):
             h3 = self.gru3(h2, h3)
         return h3
     
+    def calibrate(
+        self,
+        x: torch.Tensor,
+        h1: torch.Tensor = None,
+        h2: torch.Tensor = None,
+        h3: torch.Tensor = None,
+    ) -> torch.Tensor:
+        
+        if h1 is None:
+            h1 = torch.zeros(x.size(1), self.hidden_size, device=x.device)
+        if h2 is None:
+            h2 = torch.zeros(x.size(1), self.hidden_size, device=x.device)
+        if h3 is None:
+            h3 = torch.zeros(x.size(1), self.hidden_size, device=x.device)
+        
+        for l in range(x.size(0)):
+            x_in = x[l, :, :]
+            h1 = self.gru1.calibrate(x_in, h1)
+            h2 = self.gru2.calibrate(h1, h2)
+            h3 = self.gru3.calibrate(h2, h3)
+        return h3
+    
     def compile(self):
         return torch.jit.script(self)
     

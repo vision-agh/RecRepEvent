@@ -19,7 +19,7 @@ def quantize_tensor(tensor,
         qmin = 0
         qmax = 2**num_bits - 1
 
-    q_tensor = torch.round(tensor / scale + zero_point)
+    q_tensor = torch.round(tensor / (scale + 1e-8) + zero_point)
     q_tensor = torch.clamp(q_tensor, qmin, qmax)
     return q_tensor
 

@@ -22,9 +22,15 @@ class AutoEncoder(L.LightningModule):
         self.loss_polarity = torch.nn.MSELoss(reduction='none')
 
     def forward(self, batch):
-        events = batch['packed_events'].squeeze(0)
-        mask = batch['mask'].squeeze(0)
-        embeddings = self.encoder(events)
+        events = batch['packed_events'][0]
+        mask = batch['mask'][0]
+
+        # use the .calibration() after 50 epochs
+        if self.current_epoch < 50:
+            embeddings = self.encoder(events)
+        else:
+            print("Calibration")
+            embeddings = self.encoder.calibrate(events)
         output = self.decoder(embeddings, events.size(0))
 
         self.embedding = embeddings
