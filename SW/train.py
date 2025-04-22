@@ -6,7 +6,7 @@ import argparse
 import multiprocessing as mp
 
 from data.gen1 import Gen1
-from models.autoencoder import AutoEncoder
+from models.recurrent.autoencoder import AutoEncoder
 from utils.pack_events import pack_events_parallel
 from lightning.pytorch.loggers.wandb import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor

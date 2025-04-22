@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from models.my_layers.my_gru import MyGRUCell
+from models.recurrent.my_layers.my_gru import MyGRUCell
 
 class Decoder(nn.Module):
     def __init__(self, hidden_size: int, output_size: int):

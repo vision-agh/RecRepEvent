@@ -3,8 +3,8 @@ import lightning as L
 import wandb 
 import numpy as np
 
-from models.encoder import Encoder
-from models.decoder import Decoder
+from models.recurrent.encoder import Encoder
+from models.recurrent.decoder import Decoder
 
 class AutoEncoder(L.LightningModule):
     def __init__(self, cfg):

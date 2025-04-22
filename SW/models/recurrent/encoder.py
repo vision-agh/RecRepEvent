@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from models.my_layers.my_gru import MyGRUCell
-from models.my_layers.my_ligru import MyLiGRUCell
-from models.my_layers.my_mgu import MyMGUCell
+from models.recurrent.my_layers.my_gru import MyGRUCell
+from models.recurrent.my_layers.my_ligru import MyLiGRUCell
+from models.recurrent.my_layers.my_mgu import MyMGUCell
 
 class Encoder(nn.Module):
     def __init__(self, input_size: int, hidden_size: int, num_bits: int):

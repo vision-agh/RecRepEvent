@@ -7,7 +7,7 @@ import multiprocessing as mp
 import matplotlib.pyplot as plt
 
 from data.gen1 import Gen1
-from models.encoder import Encoder
+from models.recurrent.encoder import Encoder
 from utils.pack_events import pack_events_parallel
 from utils.unpack_embeddings import unpack_embeddings
 from lightning.pytorch.loggers.wandb import WandbLogger
