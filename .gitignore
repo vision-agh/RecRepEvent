@@ -2,6 +2,7 @@
 # Ignore folder SW/wandb
 SW/wandb/
 SW/Recurrent_Event_Representation/
+SW/checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

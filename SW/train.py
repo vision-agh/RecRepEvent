@@ -9,6 +9,7 @@ from data.gen1 import Gen1
 from models.autoencoder import AutoEncoder
 from utils.pack_events import pack_events_parallel
 from lightning.pytorch.loggers.wandb import WandbLogger
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 
 def main(args):
     # Load the configuration file
@@ -16,6 +17,7 @@ def main(args):
         config = yaml.safe_load(file)
 
     dm = Gen1(cfg=config)
+    dm.prepare_data()
     dm.setup()
 
     model = AutoEncoder(cfg=config)
@@ -24,9 +26,21 @@ def main(args):
                                name=f"first_run")
     wandb_logger.watch(model)
 
+    lr_monitor = LearningRateMonitor(logging_interval='step')
+    checkpoint_callback = ModelCheckpoint(
+        dirpath='checkpoints',
+        filename=f'my_gru_checkpoint',
+        monitor='val_loss',
+        mode='min',
+        save_top_k=1
+    )
+
     trainer = L.Trainer(max_epochs=100, 
                         logger=wandb_logger, 
+                        callbacks=[lr_monitor, checkpoint_callback],
                         log_every_n_steps=1,
+                        check_val_every_n_epoch=2,
+                        deterministic=True,
                         limit_train_batches=100,
                         limit_val_batches=100)
     

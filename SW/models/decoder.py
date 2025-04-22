@@ -15,6 +15,7 @@ class Decoder(nn.Module):
 
         # from top hidden to events
         self.linear         = nn.Linear(hidden_size, output_size)
+        
         # map events back into hidden‐space for the next step
         self.output2hidden  = nn.Linear(output_size, hidden_size)
 

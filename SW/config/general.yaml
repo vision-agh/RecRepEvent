@@ -8,6 +8,7 @@ image_size:
   W: 224
   H: 224
 time_window: 300000
+num_events: 50000
 
 encoder:
   rnn_type: MyGRU
@@ -19,10 +20,13 @@ decoder:
 
 train_encoder:
   scale_time_loss: 1
-  scale_polarity_loss: 0
+  scale_polarity_loss: 0.1
   learning_rate: 0.001
   weight_decay: 0.0001
 
+remove_empty_pixels: true
+crop_events_spatially: true
+crop_window: 64
 
 apply_psee_bbox_filter: true
 apply_faulty_bbox_filter: true

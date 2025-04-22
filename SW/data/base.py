@@ -1,90 +1,83 @@
-import torch
-import glob
 import h5py
 import numpy as np
-
-
+import torch
 from torch.utils.data import Dataset
 from utils.pack_events import pack_events_parallel
 
 class EventDataset(Dataset):
-    def __init__(self, filepath: str, cfg, min_events: int = 0, max_events: int = None):
+    def __init__(self, filepath: str, cfg):
         """
-        filepath: path to the .h5 file
-        cfg:      your config dict
-        min_events, max_events: optionally gate samples by number of events
+        Expects your .h5 to contain:
+          - events         : (total_events, 4) float32
+          - bboxes         : (total_bboxes, 5) int32
+          - events_splits  : (num_samples+1,) int64
+          - bboxes_splits  : (num_samples+1,) int64
         """
         self.filepath = filepath
         self.cfg = cfg
 
-        # Open once, read only the small lengths & shape metadata, then close
+        # read just the splits so we know how many samples and where each lives
         with h5py.File(self.filepath, "r") as f:
-            lengths = f["events_lengths"][:]  
-            self.trail_ev = tuple(f.attrs["events_trailing_shape"])
-            self.lengths_ev = lengths
+            self.events_splits = f["events_splits"][:]      # e.g. [0, 100, 250, ...]
+            self.bboxes_splits = f["bboxes_splits"][:]
+        self.num_samples = len(self.events_splits) - 1
 
-            lengths_bb = f["bboxes_lengths"][:]
-            self.trail_bb = tuple(f.attrs["bboxes_trailing_shape"])
-            self.lengths_bb = lengths_bb
-
-        # Build a list of valid indices after gating on event count
-        if max_events is None:
-            max_events = np.inf
-        valid = np.where((lengths >= min_events) & (lengths <= max_events))[0]
-        self.indices = valid.tolist()
-
-        # We'll lazily open the file *inside* each worker on first __getitem__ call
-        self._h5f = None
-        self._ds_ev = None
-        self._ds_bb = None
+        # Will open the file & datasets once per worker
+        self._h5f    = None
+        self._ds_ev  = None
+        self._ds_bb  = None
 
     def __len__(self):
-        return len(self.indices)
+        return self.num_samples
 
     def __getitem__(self, idx):
-        real_i = self.indices[idx]
-
-        # lazily open the file & datasets once per worker
+        # lazily open
         if self._h5f is None:
-            self._h5f  = h5py.File(self.filepath, "r")
+            self._h5f   = h5py.File(self.filepath, "r")
             self._ds_ev = self._h5f["events"]
             self._ds_bb = self._h5f["bboxes"]
 
-        # read just this one sample (no bulk [:] calls!)
-        flat_ev = self._ds_ev[real_i]
-        events_all  = flat_ev.reshape(self.lengths_ev[real_i], *self.trail_ev)
+        # figure out our slice in the flat arrays
+        e_start = int(self.events_splits[idx])
+        e_end   = int(self.events_splits[idx+1])
+        b_start = int(self.bboxes_splits[idx])
+        b_end   = int(self.bboxes_splits[idx+1])
 
-        flat_bb = self._ds_bb[real_i]
-        bboxes  = flat_bb.reshape(self.lengths_bb[real_i], *self.trail_bb)
+        # pull out just our events & bboxes
+        ev_np = self._ds_ev[e_start:e_end]      # shape = (n_ev, 4)
+        bb_np = self._ds_bb[b_start:b_end]      # shape = (n_bb, 5)
 
-        events_all = torch.from_numpy(events_all).float()
+        bboxes = torch.from_numpy(bb_np).long()
 
-        # Normalize time to [0, 1]
-        events_all[:, 0] = (events_all[:, 0] - events_all[:, 0].min()) / (events_all[:, 0].max() - events_all[:, 0].min())
+        ev_np = ev_np[:50000]  # take only the first 5000 events
+        # to torch
+        ev = torch.from_numpy(ev_np).float()
 
-        # cut window from events of shape (64, 64) randomly
-        # assert there is at least one event in the window
+        # optional spatial cropping as before
+        if self.cfg.get("crop_events_spatially", False):
+            cs = self.cfg["crop_window"]
+            H, W = self.cfg["sensor_size"]["H"], self.cfg["sensor_size"]["W"]
+            x1 = np.random.randint(0, W - cs + 1)
+            y1 = np.random.randint(0, H - cs + 1)
+            m = (
+                (ev[:,1] >= x1) & (ev[:,1] < x1+cs) &
+                (ev[:,2] >= y1) & (ev[:,2] < y1+cs)
+            )
+            ev = ev[m]
+            if len(ev) < 2 or (ev[:,1].max() - ev[:,1].min() == 0 and ev[:,2].max() - ev[:,2].min() == 0):
+                ev = torch.from_numpy(ev_np[:5000]).float()
 
-        cs = 32
-        x1 = np.random.randint(0, self.cfg["sensor_size"]["W"] - cs + 1)
-        y1 = np.random.randint(0, self.cfg["sensor_size"]["H"] - cs + 1)
-        x2, y2 = x1 + cs, y1 + cs
+        # pack events into whatever tensor your model expects
+        packed, counts, mask = pack_events_parallel(
+            events=ev,
+            H=self.cfg["sensor_size"]["H"],
+            W=self.cfg["sensor_size"]["W"],
+            include_polarity=True
+        )
 
-        m_x = (events_all[:,1] >= x1) & (events_all[:,1] < x2)
-        m_y = (events_all[:,2] >= y1) & (events_all[:,2] < y2)
-        mask_crop = m_x & m_y
+        # drop empty columns
+        keep = counts > 0
+        packed = packed[:, keep]
+        mask   = mask[:, keep]
 
-        events_crop = events_all[mask_crop]
-        if events_crop.shape[0] < 2 or ( events_crop[:, 1].max() - events_crop[:, 1].min() == 0 and events_crop[:, 2].max() - events_crop[:, 2].min() == 0 ):
-            # fallback to first 1000 events if crop was empty
-            events_crop = events_all[:1000]
-
-        # pack events
-        packed_events, counts_per_pixel, mask = pack_events_parallel(events=events_crop,
-                                                                    H=self.cfg["sensor_size"]["H"],
-                                                                    W=self.cfg["sensor_size"]["W"],
-                                                                    include_polarity=True)
-
-        packed_events = packed_events[:, counts_per_pixel > 0]
-        mask = mask[:, counts_per_pixel > 0]
-        return packed_events, mask
+        return packed, mask, counts, bboxes

@@ -9,9 +9,9 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.hidden_size = hidden_size
 
-        self.gru1 = MyMGUCell(input_size, hidden_size, num_bits)
-        self.gru2 = MyMGUCell(hidden_size, hidden_size, num_bits)
-        self.gru3 = MyMGUCell(hidden_size, hidden_size, num_bits)
+        self.gru1 = MyGRUCell(input_size, hidden_size, num_bits)
+        self.gru2 = MyGRUCell(hidden_size, hidden_size, num_bits)
+        self.gru3 = MyGRUCell(hidden_size, hidden_size, num_bits)
 
     def forward(
         self,
@@ -28,8 +28,6 @@ class Encoder(nn.Module):
         if h3 is None:
             h3 = torch.zeros(x.size(1), self.hidden_size, device=x.device)
         
-        # x: (L, B, D), h1/h2: (B, H)
-
         for l in range(x.size(0)):
             x_in = x[l, :, :]
             h1 = self.gru1(x_in, h1)
