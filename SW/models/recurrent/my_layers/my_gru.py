@@ -10,7 +10,8 @@ class MyGRUCell(nn.Module):
     def __init__(self, 
                  input_size:int, 
                  hidden_size:int,
-                 num_bits:int = 8):
+                 num_bits:int = 8,
+                 input_num_bits:int = 8):
         super(MyGRUCell, self).__init__()
         """
         Initialize the GRU cell with input size and hidden size.
@@ -30,7 +31,7 @@ class MyGRUCell(nn.Module):
         self.reset_parameters()
 
         # Observers for quantization
-        self.input_observer = Observer(num_bits=num_bits)
+        self.input_observer = Observer(num_bits=input_num_bits)
         self.hidden_observer = Observer(num_bits=num_bits)
 
         self.weight_ih_observer = Observer(num_bits=num_bits)

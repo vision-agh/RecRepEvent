@@ -24,7 +24,7 @@ def main(args):
     dm = Gen1(cfg=config)
     dm.setup()
 
-    model = Encoder(input_size=2, hidden_size=12, num_bits=8).eval().cuda()
+    model = Encoder(input_size=2, hidden_size=12, num_bits=8, input_num_bits=12).eval().cuda()
     model.compile()
 
     checkpoint = torch.load("checkpoints/my_gru_checkpoint-v7.ckpt", weights_only=True)
@@ -53,7 +53,7 @@ def main(args):
         counts_per_pixel = batch['counts_per_pixel'][0]
         bboxes = batch['bboxes']
 
-        embeddings = model(events.cuda())
+        embeddings = model.calibrate(events.cuda())
 
         u_embeddings = unpack_embeddings(embeddings, 
                                         config["sensor_size"]["H"], 

@@ -49,7 +49,7 @@ class EventDataset(Dataset):
 
         bboxes = torch.from_numpy(bb_np).long()
 
-        ev_np = ev_np[:50000]  # take only the first 5000 events
+        ev_np = ev_np[:50000]  # take only the first 50000 events
         # to torch
         ev = torch.from_numpy(ev_np).float()
 

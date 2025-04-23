@@ -5,13 +5,27 @@ from models.recurrent.my_layers.my_ligru import MyLiGRUCell
 from models.recurrent.my_layers.my_mgu import MyMGUCell
 
 class Encoder(nn.Module):
-    def __init__(self, input_size: int, hidden_size: int, num_bits: int):
+    def __init__(self, input_size: int, 
+                        hidden_size: int, 
+                        num_bits: int,
+                        input_num_bits: int):
         super(Encoder, self).__init__()
         self.hidden_size = hidden_size
 
-        self.gru1 = MyGRUCell(input_size, hidden_size, num_bits)
-        self.gru2 = MyGRUCell(hidden_size, hidden_size, num_bits)
-        self.gru3 = MyGRUCell(hidden_size, hidden_size, num_bits)
+        self.gru1 = MyGRUCell(input_size, 
+                                hidden_size, 
+                                num_bits=num_bits,
+                                input_num_bits=input_num_bits)
+
+        self.gru2 = MyGRUCell(hidden_size, 
+                                hidden_size, 
+                                num_bits,
+                                input_num_bits=num_bits)
+
+        self.gru3 = MyGRUCell(hidden_size, 
+                                hidden_size, 
+                                num_bits,
+                                input_num_bits=num_bits)
 
     def forward(
         self,

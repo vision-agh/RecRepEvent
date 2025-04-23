@@ -12,7 +12,7 @@ class AutoEncoder(L.LightningModule):
  
         self.cfg = cfg
 
-        self.encoder = Encoder(input_size=2, hidden_size=12, num_bits=8)
+        self.encoder = Encoder(input_size=2, hidden_size=12, num_bits=8, input_num_bits=12)
         self.decoder = Decoder(hidden_size=12, output_size=2)
 
         self.encoder.compile()
@@ -26,7 +26,7 @@ class AutoEncoder(L.LightningModule):
         mask = batch['mask'][0]
 
         # use the .calibration() after 50 epochs
-        if self.current_epoch < 50:
+        if self.current_epoch < 70:
             embeddings = self.encoder(events)
         else:
             print("Calibration")

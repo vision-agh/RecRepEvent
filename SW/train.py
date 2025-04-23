@@ -41,7 +41,7 @@ def main(args):
                         log_every_n_steps=1,
                         check_val_every_n_epoch=2,
                         deterministic=True,
-                        limit_train_batches=100,
+                        limit_train_batches=1000,
                         limit_val_batches=100)
     
     trainer.fit(model, dm)

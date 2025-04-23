@@ -1,6 +1,6 @@
 name: Gen1
-data_dir: /home/imperator/Datasets/gen1
-dir_to_save: /home/imperator/Datasets/gen1_processed
+data_dir: /home/lsriw/Datasets/gen1
+dir_to_save: /home/lsriw/Datasets/gen1_processed
 sensor_size:
   W: 304
   H: 240
