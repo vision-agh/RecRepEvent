@@ -53,23 +53,23 @@ class AutoEncoder(L.LightningModule):
     
     def training_step(self, batch, batch_idx):
         loss, loss_time, loss_pol, _, _ = self.forward(batch)
-        self.log('train_loss', loss)
-        self.log('train_loss_time', loss_time)
-        self.log('train_loss_pol', loss_pol)
+        self.log('train_loss', loss, batch_size=1)
+        self.log('train_loss_time', loss_time, batch_size=1)
+        self.log('train_loss_pol', loss_pol, batch_size=1)
         return loss
         
     def validation_step(self, batch, batch_idx):
         loss, loss_time, loss_pol, input, output = self.forward(batch)
-        self.log('val_loss', loss)
-        self.log('val_loss_time', loss_time)
-        self.log('val_loss_pol', loss_pol)
+        self.log('val_loss', loss, batch_size=1)
+        self.log('val_loss_time', loss_time, batch_size=1)
+        self.log('val_loss_pol', loss_pol, batch_size=1)
         return loss
     
     def test_step(self, batch, batch_idx):
         loss, loss_time, loss_pol  = self.forward(batch)
-        self.log('test_loss', loss)
-        self.log('test_loss_time', loss_time)
-        self.log('test_loss_pol', loss_pol)
+        self.log('test_loss', loss, batch_size=1)
+        self.log('test_loss_time', loss_time, batch_size=1)
+        self.log('test_loss_pol', loss_pol, batch_size=1)
         return loss
     
     def configure_optimizers(self):

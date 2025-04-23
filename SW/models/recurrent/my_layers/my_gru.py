@@ -217,7 +217,6 @@ class MyGRUCell(nn.Module):
         n = tanh_n[n.long()]
 
         # New hidden state
-        # Difference
         diff = quantize_tensor(1,
                                 scale=self.output_observer_sigmoid_z.scale,
                                 zero_point=self.output_observer_sigmoid_z.zero_point,

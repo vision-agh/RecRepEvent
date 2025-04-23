@@ -27,7 +27,7 @@ def main(args):
     model = Encoder(input_size=2, hidden_size=12, num_bits=8, input_num_bits=12).eval().cuda()
     model.compile()
 
-    checkpoint = torch.load("checkpoints/my_gru_checkpoint-v7.ckpt", weights_only=True)
+    checkpoint = torch.load("checkpoints/my_gru_checkpoint.ckpt", weights_only=True)
     encoder_weights = {k.replace("encoder.", ""): v for k, v in checkpoint["state_dict"].items() if k.startswith("encoder.")}
     model.load_state_dict(encoder_weights, strict=False)
 
