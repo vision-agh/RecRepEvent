@@ -35,7 +35,7 @@ conda create -n dvs_rec python=3.9
 pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
 conda install h5py 
 conda install blosc-hdf5-plugin -c conda-forge
-pip install omegaconf opencv-python matplotlib psutil wandb lightning
+pip install omegaconf opencv-python matplotlib psutil wandb lightning tonic numba pycocotools
 
 git clone https://github.com/Megvii-BaseDetection/YOLOX
 cd YOLOX
