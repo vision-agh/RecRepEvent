@@ -14,10 +14,12 @@ num_events: 50000
 encoder:
   rnn_type: MyGRU
   input_size: 1         # 1 if only timestamps, 2 if timestamps + polarity
-  hidden_size: [12, 12]
+  hidden_size: [12, 12, 12]
+  num_bits: 8
+  input_num_bits: 12
 decoder:
   rnn_type: MyGRU
-  hidden_size: [12, 12]
+  hidden_size: [12, 12, 12]
 
 train_encoder:
   scale_time_loss: 1
@@ -37,3 +39,6 @@ representation: Encoder
 num_processes: 8    # number of processes to use for data generation
 num_workers: 1      # number of workers to use for data loading
 batch_size: 1
+
+augmentation:
+  h_flip: 0.5

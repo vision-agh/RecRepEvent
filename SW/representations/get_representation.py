@@ -4,9 +4,11 @@ from representations.mixed_density_event_stack import EventStack
 import tonic.transforms as tonic_transforms
 from representations.time_surface import ToTimesurface
 import numpy as np
-import numpy.lib.recfunctions as rfn
+import torch
 from representations.ordering_event_representation import get_optimized_representation
 from representations.tore import events2ToreFeature
+from utils.pack_events import pack_events_parallel
+from utils.unpack_embeddings import unpack_embeddings
 
 
 def get_item_transform(
@@ -14,7 +16,9 @@ def get_item_transform(
     representation_name,
     height,
     width,
-    num_events
+    num_events,
+    cfg,
+    encoder=None
 ):
     if "ToVoxelGrid" in representation_name:
         transformation = tonic_transforms.ToVoxelGrid((width, height, 2), n_time_bins=12)
@@ -75,5 +79,34 @@ def get_item_transform(
         rep = rep.reshape((-1, rep.shape[-2], rep.shape[-1]))
         rep = rep.transpose(1, 2, 0)
         rep *= 255
+
+    elif "Encoder" in representation_name:
+        ev = np.stack([reshaped_return_data["t"], 
+                       reshaped_return_data["x"], 
+                       reshaped_return_data["y"], 
+                       reshaped_return_data["p"]], axis=1).astype(np.float32)
+        
+        ev[:, 0] = ev[:, 0] / cfg["time_window"]      # shape = (n_ev, 4)
+        ev = torch.from_numpy(ev)
+
+        packed, counts, mask = pack_events_parallel(
+            events=ev,
+            H=cfg["sensor_size"]["H"],
+            W=cfg["sensor_size"]["W"],
+            include_polarity=True
+        )
+
+        keep = counts > 0
+        packed = packed[:, keep]
+        mask   = mask[:, keep]
+
+        embeddings = encoder(packed.cuda())
+
+        rep = unpack_embeddings(embeddings, 
+                                        cfg["sensor_size"]["H"], 
+                                        cfg["sensor_size"]["W"],
+                                        counts)
+        
+        rep = rep.detach().cpu().numpy()
 
     return rep

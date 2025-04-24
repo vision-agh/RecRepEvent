@@ -4,8 +4,12 @@ import torch
 from torch.utils.data import Dataset
 from utils.pack_events import pack_events_parallel
 
+import torchvision.transforms as transforms
+
 class EventDatasetRepresentation(Dataset):
-    def __init__(self, filepath: str, cfg):
+    def __init__(self, filepath: str, 
+                        cfg,
+                        augment: bool = False):
         """
         Expects your .h5 to contain:
           - events         : (total_events, 4) float32
@@ -18,7 +22,7 @@ class EventDatasetRepresentation(Dataset):
 
         # read just the splits so we know how many samples and where each lives
         with h5py.File(self.filepath, "r") as f:
-            self.events_splits = f["events_splits"][:]      # e.g. [0, 100, 250, ...]
+            self.events_splits = f["rep_splits"][:]      # e.g. [0, 100, 250, ...]
             self.bboxes_splits = f["bboxes_splits"][:]
         self.num_samples = len(self.events_splits) - 1
 
@@ -27,6 +31,11 @@ class EventDatasetRepresentation(Dataset):
         self._ds_ev  = None
         self._ds_bb  = None
 
+        self.augment = augment
+
+        # Augmentation
+
+
     def __len__(self):
         return self.num_samples
 
@@ -34,7 +43,7 @@ class EventDatasetRepresentation(Dataset):
         # lazily open
         if self._h5f is None:
             self._h5f   = h5py.File(self.filepath, "r")
-            self._ds_ev = self._h5f["events"]
+            self._ds_ev = self._h5f["representation"]
             self._ds_bb = self._h5f["bboxes"]
 
         # figure out our slice in the flat arrays
@@ -47,19 +56,8 @@ class EventDatasetRepresentation(Dataset):
         ev_np = self._ds_ev[e_start:e_end]      # shape = (n_ev, 4)
         bb_np = self._ds_bb[b_start:b_end]      # shape = (n_bb, 5)
 
-        event_dtype = np.dtype([
-        ('x', np.int32),
-        ('y', np.int32),
-        ('t', np.int64),
-        ('p', np.int32),
-        ])
+        rep = torch.from_numpy(ev_np)
+        bbox = torch.from_numpy(bb_np)
 
-        ev = np.zeros((len(ev_np),), dtype=event_dtype)
-        ev['t'] = ev_np[:, 0].long()
-        ev['x'] = ev_np[:, 1].long()
-        ev['y'] = ev_np[:, 2].long()
-        ev['p'] = ev_np[:, 3].long()
 
-        bboxes = torch.from_numpy(bb_np).long()
-        ev = torch.from_numpy(ev).float()
-        return ev, bboxes
+        return rep, bbox

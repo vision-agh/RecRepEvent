@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a model with a configuration file.")
     parser.add_argument('--config', 
                         type=str,
-                        default='SW/config/general.yaml',
+                        default='config/general.yaml',
                         help='Path to the configuration file.')
     args = parser.parse_args()
     main(args)

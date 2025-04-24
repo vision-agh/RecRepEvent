@@ -21,16 +21,20 @@ class AutoEncoder(L.LightningModule):
         self.loss_time = torch.nn.MSELoss(reduction='none')
         self.loss_polarity = torch.nn.MSELoss(reduction='none')
 
+        self.lr = cfg['train_encoder']['learning_rate']
+        self.weight_decay = cfg['train_encoder']['weight_decay']
+
+        self.calibrate = False
+
     def forward(self, batch):
         events = batch['packed_events'][0]
         mask = batch['mask'][0]
 
-        # use the .calibration() after 50 epochs
-        if self.current_epoch < 70:
-            embeddings = self.encoder(events)
-        else:
-            print("Calibration")
+        if self.calibrate:
             embeddings = self.encoder.calibrate(events)
+        else:
+            embeddings = self.encoder(events)
+
         output = self.decoder(embeddings, events.size(0))
 
         self.embedding = embeddings
@@ -74,6 +78,6 @@ class AutoEncoder(L.LightningModule):
     
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), 
-                                        lr=self.cfg['train_encoder']['learning_rate'],
-                                        weight_decay=self.cfg['train_encoder']['weight_decay'])
+                                        lr=self.lr,
+                                        weight_decay=self.weight_decay)
         return optimizer

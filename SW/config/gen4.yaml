@@ -3,21 +3,23 @@ data_dir: /home/imperator/Datasets/gen1
 dir_to_save: /home/imperator/Datasets/gen1_processed
 
 sensor_size:
-  W: 304
-  H: 240
+  W: 720
+  H: 1280
 image_size:
-  W: 224
-  H: 224
-time_window: 200000
-num_events: 50000
+  W: 640
+  H: 640
+time_window: 100000
+num_events: 70000
 
 encoder:
   rnn_type: MyGRU
   input_size: 1         # 1 if only timestamps, 2 if timestamps + polarity
-  hidden_size: [12, 12]
+  hidden_size: [12, 12, 12]
+  num_bits: 8
+  input_num_bits: 12
 decoder:
   rnn_type: MyGRU
-  hidden_size: [12, 12]
+  hidden_size: [12, 12, 12]
 
 train_encoder:
   scale_time_loss: 1
