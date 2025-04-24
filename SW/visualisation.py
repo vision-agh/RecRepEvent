@@ -6,7 +6,7 @@ import argparse
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 
-from data.gen1 import Gen1
+from data.gen1_2_encoder import Gen1
 from models.recurrent.encoder import Encoder
 from utils.pack_events import pack_events_parallel
 from utils.unpack_embeddings import unpack_embeddings
@@ -38,7 +38,7 @@ def main(args):
 
     # Inicjalizujemy puste obrazy
     for ax in axes.flatten():
-        img = ax.imshow(np.zeros((config["sensor_size"]["H"], config["sensor_size"]["W"])), cmap='hot', vmin=0, vmax=255)
+        img = ax.imshow(np.zeros((config["sensor_size"]["H"], config["sensor_size"]["W"])), cmap='inferno', vmin=0, vmax=255)
         ax.axis('off')
         imgs.append(img)
 
@@ -51,9 +51,8 @@ def main(args):
     for i, batch in enumerate(dm.val_dataloader()):
         events = batch['packed_events'][0]
         counts_per_pixel = batch['counts_per_pixel'][0]
-        bboxes = batch['bboxes']
 
-        embeddings = model.calibrate(events.cuda())
+        embeddings = model(events.cuda())
 
         u_embeddings = unpack_embeddings(embeddings, 
                                         config["sensor_size"]["H"], 
@@ -71,12 +70,6 @@ def main(args):
         for j in range(12):
             one_channel = img[:, :, j]
             # show bounding boxes
-            for b in bboxes:
-                x, y, w, h = b[0], b[1], b[2], b[3]
-                one_channel[y:y+h, x] = 255
-                one_channel[y:y+h, x+w] = 255
-                one_channel[y, x:x+w] = 255
-                one_channel[y+h, x:x+w] = 255
             imgs[j].set_data(one_channel)
             imgs[j].set_clim(vmin=0, vmax=255)  # opcjonalnie – jeśli wartości się zmieniają dynamicznie
 

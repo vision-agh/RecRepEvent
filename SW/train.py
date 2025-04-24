@@ -5,7 +5,7 @@ import torch
 import argparse
 import multiprocessing as mp
 
-from data.gen1 import Gen1
+from data.gen1_2_encoder import Gen1
 from models.recurrent.autoencoder import AutoEncoder
 from utils.pack_events import pack_events_parallel
 from lightning.pytorch.loggers.wandb import WandbLogger

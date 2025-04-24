@@ -14,16 +14,12 @@ from tqdm import tqdm
 
 from data.readers.extractor_gen1 import Gen1Reader
 from data.utils.bbox_filters import apply_filters
-from data.base import EventDataset
-
-
-def log_mem(stage: str):
-    mb = psutil.Process(os.getpid()).memory_info().rss / 1024**2
-    print(f"[{stage}] RSS = {mb:.1f} MB")
+from data.base_encoder import EventDatasetEncoder
 
 
 def iter_samples(file_path: str, cfg: dict):
     """Yield (ev, bb) pairs one by one—no list ever built."""
+    print(f"Processing {file_path}")
     reader = Gen1Reader(file_path)
     ann_file = file_path.replace("_td.dat.h5", "_bbox.npy")
     mode = Path(file_path).parent.name
@@ -31,18 +27,17 @@ def iter_samples(file_path: str, cfg: dict):
     anns = np.load(ann_file)
     anns = apply_filters(anns, mode, cfg, dataset_type="gen1")
     for t_bbox in np.unique(anns["t"]).astype(np.int64):
-        t0, t1 = t_bbox - 100_000, t_bbox + 100_000
+        t0, t1 = t_bbox - cfg["time_window"] / 2, t_bbox + cfg["time_window"] / 2
+
         ev = reader.extract_timewindow(t0, t1)
         ev = np.stack([ev["t"], ev["x"], ev["y"], ev["p"]], axis=1).astype(np.float32)
         if ev.shape[0] == 0:
             continue
-        ev[:, 0] = (ev[:, 0] - t0) / (t1 - t0)
-
+        ev[:, 0] = ev[:, 0] - t0
+        ev = ev[:cfg["num_events"]]
         bb = anns[anns["t"] == t_bbox]
         bb = np.array(bb.tolist())[:, 1:6].astype(np.int32)
-
         yield ev, bb
-
     reader.close()
 
 
@@ -52,7 +47,6 @@ def _worker_proc(file_list, queue, cfg):
     and put them onto the queue.  At the end, send a None sentinel.
     """
     for fp in file_list:
-        log_mem(f"After {fp}")
         for ev, bb in iter_samples(fp, cfg):
             queue.put((ev, bb))
     queue.put(None)  # signal “I’m done”
@@ -106,9 +100,7 @@ def _writer_proc(queue, out_path, num_workers):
 
         f.create_dataset("events_splits",  data=events_splits)
         f.create_dataset("bboxes_splits",  data=bboxes_splits)
-
         f.flush()
-    # once closed, exit automatically
 
 
 class Gen1(L.LightningDataModule):
@@ -118,7 +110,6 @@ class Gen1(L.LightningDataModule):
 
     def prepare_data(self):
         os.makedirs(self.cfg["dir_to_save"], exist_ok=True)
-
         # enforce 'spawn' for true process isolation
         ctx = mp.get_context("spawn")
 
@@ -128,7 +119,6 @@ class Gen1(L.LightningDataModule):
                 continue
 
             files = sorted(glob.glob(os.path.join(self.cfg["data_dir"], split, "*.h5")))
-            log_mem(f"Before {split}")
 
             # 1) build a bounded queue
             queue = ctx.Queue(maxsize=500)
@@ -165,30 +155,17 @@ class Gen1(L.LightningDataModule):
 
     def setup(self, stage=None):
         base = Path(self.cfg["dir_to_save"])
-        self.train_data = EventDataset(base / "train.h5", self.cfg)
-        self.val_data   = EventDataset(base / "val.h5",   self.cfg)
-        self.test_data  = EventDataset(base / "test.h5",  self.cfg)
+        self.train_data = EventDatasetEncoder(base / "train.h5", self.cfg)
+        self.val_data   = EventDatasetEncoder(base / "val.h5",   self.cfg)
+        self.test_data  = EventDatasetEncoder(base / "test.h5",  self.cfg)
 
     def collate_fn(self, batch):
-        packed_events, masks, counts, bbs = zip(*batch)
+        packed_events, masks, counts = zip(*batch)
 
-        bboxes = []
-        batch_idx = []
-
-        for idx, bb in enumerate(bbs):
-            num_bboxes = bb.size(0)
-            bboxes.append(bb)
-            batch_idx.append(torch.full((num_bboxes,), idx, dtype=torch.long))
-
-        batch_bboxes = torch.cat(bboxes, dim=0)          # [sum_num_bboxes, 5]
-        batch_indices = torch.cat(batch_idx, dim=0)     # [sum_num_bboxes]
-        
         return {
             "packed_events":    packed_events,
             "mask":             masks,
             "counts_per_pixel": counts,
-            "bboxes":           batch_bboxes,
-            "batch_bbox":       batch_indices,
         }
 
     def _make_loader(self, ds, shuffle=False):

@@ -1,5 +1,8 @@
 import torch
-from torch_scatter import scatter
+import numpy as np
+# from torch_scatter import scatter
+
+from representations.utils.my_scatter import scatter
 
 
 class MixedDensityEventStack(object):

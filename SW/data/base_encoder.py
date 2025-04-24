@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import Dataset
 from utils.pack_events import pack_events_parallel
 
-class EventDataset(Dataset):
+class EventDatasetEncoder(Dataset):
     def __init__(self, filepath: str, cfg):
         """
         Expects your .h5 to contain:
@@ -19,7 +19,6 @@ class EventDataset(Dataset):
         # read just the splits so we know how many samples and where each lives
         with h5py.File(self.filepath, "r") as f:
             self.events_splits = f["events_splits"][:]      # e.g. [0, 100, 250, ...]
-            self.bboxes_splits = f["bboxes_splits"][:]
         self.num_samples = len(self.events_splits) - 1
 
         # Will open the file & datasets once per worker
@@ -35,23 +34,15 @@ class EventDataset(Dataset):
         if self._h5f is None:
             self._h5f   = h5py.File(self.filepath, "r")
             self._ds_ev = self._h5f["events"]
-            self._ds_bb = self._h5f["bboxes"]
 
         # figure out our slice in the flat arrays
         e_start = int(self.events_splits[idx])
         e_end   = int(self.events_splits[idx+1])
-        b_start = int(self.bboxes_splits[idx])
-        b_end   = int(self.bboxes_splits[idx+1])
 
         # pull out just our events & bboxes
         ev_np = self._ds_ev[e_start:e_end]      # shape = (n_ev, 4)
-        bb_np = self._ds_bb[b_start:b_end]      # shape = (n_bb, 5)
-
-        bboxes = torch.from_numpy(bb_np).long()
-
-        ev_np = ev_np[:50000]  # take only the first 50000 events
-        # to torch
         ev = torch.from_numpy(ev_np).float()
+        ev[:, 0] /= self.cfg["time_window"]
 
         # optional spatial cropping as before
         if self.cfg.get("crop_events_spatially", False):
@@ -80,4 +71,4 @@ class EventDataset(Dataset):
         packed = packed[:, keep]
         mask   = mask[:, keep]
 
-        return packed, mask, counts, bboxes
+        return packed, mask, counts

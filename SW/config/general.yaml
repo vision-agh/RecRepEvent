@@ -1,13 +1,14 @@
 name: Gen1
-data_dir: /home/lsriw/Datasets/gen1
-dir_to_save: /home/lsriw/Datasets/gen1_processed
+data_dir: /home/imperator/Datasets/gen1
+dir_to_save: /home/imperator/Datasets/gen1_processed
+
 sensor_size:
   W: 304
   H: 240
 image_size:
   W: 224
   H: 224
-time_window: 300000
+time_window: 200000
 num_events: 50000
 
 encoder:
@@ -30,6 +31,8 @@ crop_window: 64
 
 apply_psee_bbox_filter: true
 apply_faulty_bbox_filter: true
+
+representation: EventStack
 
 num_processes: 8    # number of processes to use for data generation
 num_workers: 1      # number of workers to use for data loading
