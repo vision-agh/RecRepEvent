@@ -18,20 +18,20 @@ from models.detection.utils.convert_bbox import convert_to_training_format
 
 from models.detection.resnet import ResNetDetectionModel
 
-GEN1_CLASSES = {0: "car", 1: "pedestrian"}
+GEN1_CLASSES = {"car": 0, "pedestrian": 1}
 GEN4_CLASSES = {0: "car", 1: "pedestrian", 2: "bicycle", 3: "motorcycle", 4: "bus", 5: "truck"}
 
 class LNDetection(L.LightningModule):
-    def __init__(self, cfg_dataset, cfg_model):
+    def __init__(self, cfg_dataset):
         super().__init__()
-        self.lr = cfg_dataset.train.lr
-        self.weight_decay = cfg_dataset.train.weight_decay
+        self.lr = 0.0001
+        self.weight_decay = 0.001
 
-        self.batch_size = cfg_dataset.train.batch_size
-        self.num_classes = cfg_dataset.general.num_classes
+        self.batch_size = 16
+        self.num_classes = 2
 
         self.map = MeanAveragePrecision()
-        self.model = ResNetDetectionModel(cfg_model, num_classes=2)
+        self.model = ResNetDetectionModel(num_classes=2)
 
         self.save_hyperparameters()
 
@@ -45,8 +45,8 @@ class LNDetection(L.LightningModule):
         return optimizer
 
     def forward(self, data):  
-        target = convert_to_training_format(data['bbox'].float(), data['batch_bbox'], self.batch_size)
-        x = self.model(data['x'], target)
+        target = convert_to_training_format(data['bboxes'].float(), data['batch_idx'], self.batch_size)
+        x = self.model(data['representations'], target)
         return x
 
     def training_step(self, batch, batch_idx):
@@ -65,10 +65,10 @@ class LNDetection(L.LightningModule):
         preds = self.forward(data=batch)
 
         gts = []
-        unique_indices = batch["batch_bbox"].unique(sorted=True)
+        unique_indices = batch["batch_idx"].unique(sorted=True)
         for idx in unique_indices:
-            mask = (batch["batch_bbox"] == idx)
-            bbox = batch["bbox"][mask].clone()
+            mask = (batch["batch_idx"] == idx)
+            bbox = batch["bboxes"][mask].clone()
             bbox[:, 2:4] += bbox[:, :2]  # zamiana z xywh na xyxy
             gts.append({
                 "boxes": bbox[:, :4].cpu(),
@@ -96,10 +96,10 @@ class LNDetection(L.LightningModule):
         preds = self.forward(data=batch)
 
         gts = []
-        unique_indices = batch["batch_bbox"].unique(sorted=True)
+        unique_indices = batch["batch_idx"].unique(sorted=True)
         for idx in unique_indices:
-            mask = (batch["batch_bbox"] == idx)
-            bbox = batch["bbox"][mask].clone()
+            mask = (batch["batch_idx"] == idx)
+            bbox = batch["bboxes"][mask].clone()
             bbox[:, 2:4] += bbox[:, :2]  # zamiana z xywh na xyxy
             gts.append({
                 "boxes": bbox[:, :4].cpu(),
@@ -125,17 +125,17 @@ class LNDetection(L.LightningModule):
 
         gts = val_pred['gts']
         preds = val_pred['preds']
-        ev_img = batch['x']
+        ev_img = batch['representations']
 
         if ev_img.shape[1] > 2:
-            ev_img = ev_img[:, :2, :, :]
+            ev_img = ev_img[:, :3, :, :]
             
         class_id_to_label = {int(v): k for k, v in GEN1_CLASSES.items()}
 
         images = []
 
         # Iterate over the first four batches
-        for i in range(batch['batch_bbox'].max().item() + 1):
+        for i in range(batch['batch_idx'].max().item() + 1):
             bbs = preds[i]['boxes'].cpu().numpy()
             labels = preds[i]['labels'].cpu().numpy()
             scores = preds[i]['scores'].cpu().numpy()
@@ -183,3 +183,4 @@ class LNDetection(L.LightningModule):
             )
 
         # Log all images under a single log key
+        self.logger.experiment.log({'val/predictions': images})

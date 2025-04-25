@@ -1,29 +1,36 @@
-import torch
-import numpy as np
-import h5py
 import yaml
+import lightning as L
+
+
+from lightning.pytorch.loggers.wandb import WandbLogger
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
+
 from data.gen1_2_representation import Gen1
 from representations.ordering_event_representation import get_optimized_representation
 import matplotlib.pyplot as plt
 from representations.get_representation import get_item_transform
 
+from models.detection.detection import LNDetection
 
 def main(args):
     # Load the configuration file
     with open(args.config, 'r') as file:
         config = yaml.safe_load(file)
-    config["batch_size"] = 1
 
+    config["representation"] = args.representation
     dm = Gen1(cfg=config)
     dm.prepare_data()
-
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Train a model with a configuration file.")
     parser.add_argument('--config', 
                         type=str,
-                        default='config/general.yaml',
+                        default='config/gen1.yaml',
                         help='Path to the configuration file.')
+    parser.add_argument('--representation',
+                        type=str,
+                        default='ToVoxelGrid',
+                        help='Type of the representation.')
     args = parser.parse_args()
     main(args)

@@ -3,6 +3,8 @@
 SW/wandb/
 SW/Recurrent_Event_Representation/
 SW/checkpoints/
+SW/YOLOX
+SW/slurm
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,460 +1,183 @@
-# author: Nikola Zubic
-
-import torch.nn as nn
-import torch
-import torch.nn.functional as F
-import math
-import torch.utils.model_zoo as model_zoo
 import numpy as np
-
-
-model_paths = {
-    # download link: https://download.pytorch.org/models/resnet50-19c8e357.pth
-    "resnet50": "/data/storage/nzubic/resnet50.pth"
-}
-
-
-def constant_init(module, constant, bias=0):
-    nn.init.constant_(module.weight, constant)
-    if hasattr(module, "bias"):
-        nn.init.constant_(module.bias, bias)
-
-
-def conv3x3(in_planes, out_planes, stride=1):
-    """3x3 convolution with padding"""
-    return nn.Conv2d(
-        in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False
-    )
-
-
-class SpatialAttention(nn.Module):
-    def __init__(self, kernel_size):
-        super(SpatialAttention, self).__init__()
-        self.kernel_size = kernel_size
-
-        assert kernel_size % 2 == 1, "Odd kernel size required"
-        self.conv = nn.Conv2d(
-            in_channels=2,
-            out_channels=1,
-            kernel_size=kernel_size,
-            padding=int((kernel_size - 1) / 2),
-        )
-
-    def forward(self, x):
-        max_pool = self.agg_channel(x, "max")
-        avg_pool = self.agg_channel(x, "avg")
-        pool = torch.cat([max_pool, avg_pool], dim=1)
-        conv = self.conv(pool)
-        conv = conv.repeat(1, x.size()[1], 1, 1)
-        att = torch.sigmoid(conv)
-        return att
-
-    def agg_channel(self, x, pool="max"):
-        b, c, h, w = x.size()
-        x = x.view(b, c, h * w)
-        x = x.permute(0, 2, 1)
-        if pool == "max":
-            x = F.max_pool1d(x, int(c))
-        elif pool == "avg":
-            x = F.avg_pool1d(x, int(c))
-        x = x.permute(0, 2, 1)
-        x = x.view(b, 1, h, w)
-        return x
-
-
-class ChannelAttention(nn.Module):
-    def __init__(self, n_channels_in, reduction_ratio):
-        super(ChannelAttention, self).__init__()
-        self.n_channels_in = n_channels_in
-        self.reduction_ratio = reduction_ratio
-        self.middle_layer_size = int(self.n_channels_in / float(self.reduction_ratio))
-
-        self.bottleneck = nn.Sequential(
-            nn.Linear(self.n_channels_in, self.middle_layer_size),
-            nn.ReLU(),
-            nn.Linear(self.middle_layer_size, self.n_channels_in),
-        )
-
-    def forward(self, x):
-        kernel = (x.size()[2], x.size()[3])
-        avg_pool = F.avg_pool2d(x, kernel)
-        max_pool = F.max_pool2d(x, kernel)
-
-        avg_pool = avg_pool.view(avg_pool.size()[0], -1)
-        max_pool = max_pool.view(max_pool.size()[0], -1)
-
-        avg_pool_bck = self.bottleneck(avg_pool)
-        max_pool_bck = self.bottleneck(max_pool)
-
-        pool_sum = avg_pool_bck + max_pool_bck
-
-        sig_pool = torch.sigmoid(pool_sum)
-        sig_pool = sig_pool.unsqueeze(2).unsqueeze(3)
-
-        out = sig_pool.repeat(1, 1, kernel[0], kernel[1])
-        return out
-
-
-class CBAM(nn.Module):
-    def __init__(self, n_channels_in, reduction_ratio, kernel_size):
-        super(CBAM, self).__init__()
-        self.n_channels_in = n_channels_in
-        self.reduction_ratio = reduction_ratio
-        self.kernel_size = kernel_size
-
-        self.channel_attention = ChannelAttention(n_channels_in, reduction_ratio)
-        self.spatial_attention = SpatialAttention(kernel_size)
-
-    def forward(self, f):
-        chan_att = self.channel_attention(f)
-        fp = chan_att * f
-        spat_att = self.spatial_attention(fp)
-        fpp = spat_att * fp
-        return
-
-
-class DropBlock2D(nn.Module):
-    r"""Randomly zeroes 2D spatial blocks of the input tensor.
-    As described in the paper
-    `DropBlock: A regularization method for convolutional networks`_ ,
-    dropping whole blocks of feature map allows to remove semantic
-    information as compared to regular dropout.
-    Args:
-        drop_prob (float): probability of an element to be dropped.
-        block_size (int): size of the block to drop
-    Shape:
-        - Input: `(N, C, H, W)`
-        - Output: `(N, C, H, W)`
-    .. _DropBlock: A regularization method for convolutional networks:
-       https://arxiv.org/abs/1810.12890
-    """
-
-    def __init__(self, drop_prob, block_size):
-        super(DropBlock2D, self).__init__()
-
-        self.drop_prob = drop_prob
-        self.block_size = block_size
-
-    def forward(self, x):
-        # shape: (bsize, channels, height, width)
-
-        assert (
-            x.dim() == 4
-        ), "Expected input with 4 dimensions (bsize, channels, height, width)"
-
-        if not self.training or self.drop_prob == 0.0:
-            return x
-        else:
-            # get gamma value
-            gamma = self._compute_gamma(x)
-
-            # sample mask
-            mask = (torch.rand(x.shape[0], *x.shape[2:]) < gamma).float()
-
-            # place mask on input device
-            mask = mask.to(x.device)
-
-            # compute block mask
-            block_mask = self._compute_block_mask(mask)
-
-            # apply block mask
-            out = x * block_mask[:, None, :, :]
-
-            # scale output
-            out = out * block_mask.numel() / block_mask.sum()
-
-            return out
-
-    def _compute_block_mask(self, mask):
-        block_mask = F.max_pool2d(
-            input=mask[:, None, :, :],
-            kernel_size=(self.block_size, self.block_size),
-            stride=(1, 1),
-            padding=self.block_size // 2,
-        )
-
-        if self.block_size % 2 == 0:
-            block_mask = block_mask[:, :, :-1, :-1]
-
-        block_mask = 1 - block_mask.squeeze(1)
-
-        return block_mask
-
-    def _compute_gamma(self, x):
-        return self.drop_prob / (self.block_size**2)
-
-
-class LinearScheduler(nn.Module):
-    def __init__(self, dropblock, start_value, stop_value, nr_steps):
-        super(LinearScheduler, self).__init__()
-        self.dropblock = dropblock
-        self.i = 0
-        self.drop_values = np.linspace(
-            start=start_value, stop=stop_value, num=int(nr_steps)
-        )
-
-    def forward(self, x):
-        return self.dropblock(x)
-
-    def step(self):
-        if self.i < len(self.drop_values):
-            self.dropblock.drop_prob = self.drop_values[self.i]
-
-        self.i += 1
-
-
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(
-        self, inplanes, planes, stride=1, downsample=None, cbam=False, dcn=False
-    ):
-        super(BasicBlock, self).__init__()
-        self.with_dcn = dcn
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        if not self.with_dcn:
-            self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, padding=1, bias=False)
-        else:
-            from torchvision.ops import DeformConv2d
-
-            # deformable_groups = dcn.get('deformable_groups', 1)
-            deformable_groups = 1
-            offset_channels = 18
-            self.conv2_offset = nn.Conv2d(
-                planes, deformable_groups * offset_channels, kernel_size=3, padding=1
-            )
-            self.conv2 = DeformConv2d(
-                planes, planes, kernel_size=3, padding=1, bias=False
-            )
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.use_cbam = cbam
-        if self.use_cbam:
-            self.cbam = CBAM(
-                n_channels_in=self.expansion * planes, reduction_ratio=1, kernel_size=3
-            )
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        if not self.with_dcn:
-            out = self.conv2(out)
-        else:
-            offset = self.conv2_offset(out)
-            out = self.conv2(out, offset)
-
-        out = self.bn2(out)
-
-        if self.use_cbam:
-            out = self.cbam(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-
-class Bottleneck(nn.Module):
-    expansion = 4
-
-    def __init__(
-        self, inplanes, planes, stride=1, downsample=None, cbam=False, dcn=False
-    ):
-        super(Bottleneck, self).__init__()
-        self.with_dcn = dcn
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(planes)
-        if not self.with_dcn:
-            self.conv2 = nn.Conv2d(
-                planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
-            )
-        else:
-            # deformable_groups = dcn.get('deformable_groups', 1)
-            deformable_groups = 1
-            from torchvision.ops import DeformConv2d
-
-            offset_channels = 18
-            self.conv2_offset = nn.Conv2d(
-                planes,
-                deformable_groups * offset_channels,
-                stride=stride,
-                kernel_size=3,
-                padding=1,
-            )
-            self.conv2 = DeformConv2d(
-                planes, planes, kernel_size=3, padding=1, stride=stride, bias=False
-            )
-
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(planes * 4)
-        self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
-        self.stride = stride
-        self.use_cbam = cbam
-        if self.use_cbam:
-            self.cbam = CBAM(
-                n_channels_in=self.expansion * planes, reduction_ratio=1, kernel_size=3
-            )
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        if not self.with_dcn:
-            out = self.conv2(out)
-        else:
-            offset = self.conv2_offset(out)
-            out = self.conv2(out, offset)
-
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.use_cbam:
-            out = self.cbam(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-
-class ResNet(nn.Module):
-    def __init__(
-        self, block, layers, channels=None, cbam=False, dcn=False, drop_prob=0
-    ):
-        super(ResNet, self).__init__()
-        self.inplanes = 64
-        self.dcn = dcn
-        self.cbam = cbam
-        self.drop = drop_prob != 0
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
-        self.relu = nn.ReLU(inplace=True)
-        self.out_channels = []
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        if self.drop:
-            self.dropblock = LinearScheduler(
-                DropBlock2D(drop_prob=drop_prob, block_size=5),
-                start_value=0.0,
-                stop_value=drop_prob,
-                nr_steps=5e3,
-            )
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, cbam=self.cbam)
-        self.layer3 = self._make_layer(
-            block, 256, layers[2], stride=2, cbam=self.cbam, dcn=dcn
-        )
-        self.layer4 = self._make_layer(
-            block, 512, layers[3], stride=2, cbam=self.cbam, dcn=dcn
-        )
-
-        if self.dcn is not None:
-            for m in self.modules():
-                if isinstance(m, Bottleneck) or isinstance(m, BasicBlock):
-                    if hasattr(m, "conv2_offset"):
-                        constant_init(m.conv2_offset, 0)
-
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2.0 / n))
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-        self.freeze_bn()
-
-    def _make_layer(self, block, planes, blocks, stride=1, cbam=False, dcn=None):
-        downsample = None
-        if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                nn.Conv2d(
-                    self.inplanes,
-                    planes * block.expansion,
-                    kernel_size=1,
-                    stride=stride,
-                    bias=False,
-                ),
-                nn.BatchNorm2d(planes * block.expansion),
-            )
-
-        layers = [block(self.inplanes, planes, stride, downsample, cbam=cbam, dcn=dcn)]
-        self.inplanes = planes * block.expansion
-        self.out_channels.append(self.inplanes)
-        for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes, cbam=cbam, dcn=dcn))
-
-        return nn.Sequential(*layers)
-
-    def freeze_bn(self):
-        """Freeze BatchNorm layers."""
-        for layer in self.modules():
-            if isinstance(layer, nn.BatchNorm2d):
-                layer.eval()
-
-    def forward(self, inputs):
-        x = self.conv1(inputs)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-        if self.drop:
-            x1 = self.dropblock(self.layer1(x))
-            x2 = self.dropblock(self.layer2(x1))
-        else:
-            x1 = self.layer1(x)
-            x2 = self.layer2(x1)
-        x3 = self.layer3(x2)
-        x4 = self.layer4(x3)
-
-        adaptive_average_pooling_sizes = [
-            (128, 72, 72),
-            (256, 36, 36),
-            (512, 18, 18),
-            (1024, 9, 9),
-        ]
-        x1 = nn.AdaptiveAvgPool3d(adaptive_average_pooling_sizes[0])(x1)
-        x2 = nn.AdaptiveAvgPool3d(adaptive_average_pooling_sizes[1])(x2)
-        x3 = nn.AdaptiveAvgPool3d(adaptive_average_pooling_sizes[2])(x3)
-        x4 = nn.AdaptiveAvgPool3d(adaptive_average_pooling_sizes[3])(x4)
-
-        return x1, x2, x3, x4
-
-
-def resnet50(pretrained=False, **kwargs):
-    """Constructs a ResNet-50 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(torch.load(model_paths["resnet50"]), strict=False)
-    model.conv1 = nn.Conv2d(
-        kwargs["channels"], 64, kernel_size=7, stride=2, padding=3, bias=False
-    )
+import torch
+import torch.nn as nn
+
+from YOLOX.yolox.models.yolo_head import YOLOXHead
+from YOLOX.yolox.models.losses import IOUloss
+import torchvision
+
+from torchvision.models import resnet18, resnet34, resnet50, resnet101, resnet152
+
+def get_resnet(model_name='resnet18'):
+    if model_name == 'resnet18':
+        model = resnet18(weights=None)
+    elif model_name == 'resnet34':
+        model = resnet34(weights=None)
+    elif model_name == 'resnet50':
+        model = resnet50(weights=None)
+    elif model_name == 'resnet101':
+        model = resnet101(weights=None)
+    elif model_name == 'resnet152':
+        model = resnet152(weights=None)
+    else:
+        raise ValueError('Invalid model name: {}'.format(model_name))
     return model
 
+def get_resnet_weights(model_name='resnet18'):
+    if model_name == 'resnet18':
+        weight = torchvision.models.resnet18(weights=True).state_dict()
+    elif model_name == 'resnet34':
+        weight = torchvision.models.resnet34(weights=True).state_dict()
+    elif model_name == 'resnet50':
+        weight = torchvision.models.resnet50(weights=True).state_dict()
+    elif model_name == 'resnet101':
+        weight = torchvision.models.resnet101(weights=True).state_dict()
+    elif model_name == 'resnet152':
+        weight = torchvision.models.resnet152(weights=True).state_dict()
+    else:
+        raise ValueError('Invalid model name: {}'.format(model_name))
+    return weight
 
-def resnet(pretrained=False, **kwargs):
-    version = str(kwargs.pop("version"))
-    if version == "50":
-        return resnet50(pretrained, **kwargs)
+class DetectionBackbone(torch.nn.Module):
+    def __init__(self, 
+                 input_channels,
+                 model_name='resnet18',
+                 weights=None):
+        super(DetectionBackbone, self).__init__()
+
+        base_model = get_resnet(model_name)
+
+        if weights:
+            base_model.load_state_dict(get_resnet_weights(model_name))
+
+        # Modyfikacja pierwszej warstwy, jeśli kanały wejściowe inne
+        if input_channels != base_model.conv1.in_channels:
+            base_model.conv1 = torch.nn.Conv2d(input_channels, base_model.conv1.out_channels, 
+                                               kernel_size=base_model.conv1.kernel_size, 
+                                               stride=base_model.conv1.stride, 
+                                               padding=base_model.conv1.padding, 
+                                               bias=False)
+
+        # Rozdzielenie na etapy
+        self.stem = torch.nn.Sequential(
+            base_model.conv1,
+            base_model.bn1,
+            base_model.relu,
+            base_model.maxpool
+        )
+        self.layer1 = base_model.layer1
+        self.layer2 = base_model.layer2
+        self.layer3 = base_model.layer3
+        self.layer4 = base_model.layer4
+
+    def forward(self, x):
+        x = self.stem(x)
+        out1 = self.layer1(x)
+        out2 = self.layer2(out1)
+        out3 = self.layer3(out2)
+        out4 = self.layer4(out3)
+        return out2, out3, out4
+
+
+class ResNetDetectionModel(torch.nn.Module):
+    
+    def __init__(self, num_classes=2):
+        super(ResNetDetectionModel, self).__init__()
+        self.backbone = DetectionBackbone(12, 'resnet50', False)
+
+        self.num_classes = num_classes
+        self.conf_thre = 0.0001
+
+        self.head = YOLOXHead(num_classes=num_classes, 
+                                width=1,
+                                strides=[7,14,28],
+                                in_channels=[512, 1024, 2048])
+
+    def forward(self, x, targets=None):
+        backbone_outs = self.backbone(x)
+
+        if self.training:
+            assert targets is not None
+            loss, iou_loss, conf_loss, cls_loss, l1_loss, num_fg = self.head(
+                backbone_outs, targets)
+            
+            outputs = {
+                "total_loss": loss,
+                "iou_loss": iou_loss,
+                "l1_loss": l1_loss,
+                "conf_loss": conf_loss,
+                "cls_loss": cls_loss,
+                "num_fg": num_fg,
+            }
+        else:
+            outputs = self.head(backbone_outs)
+            outputs = self.postprocess_network_output(outputs, self.num_classes, height=224, width=224, filtering=True)
+
+        return outputs
+
+    def visualize(self, x, targets, save_prefix="assign_vis_"):
+        fpn_outs = self.backbone(x)
+        self.head.visualize_assign_result(fpn_outs, targets, x, save_prefix)
+
+    def postprocess_network_output(self, prediction, num_classes, conf_thre=0.001, nms_thre=0.65, height=640, width=640, filtering=True):
+        prediction[..., :2] -= prediction[...,2:4] / 2 # cxcywh->xywh
+        prediction[..., 2:4] += prediction[...,:2]
+
+        # print(prediction[:,4])
+        output = []
+        for i, image_pred in enumerate(prediction):
+
+            # If none are remaining => process next image
+            if len(image_pred) == 0:
+                output.append({
+                    "boxes": torch.zeros(0, 4, dtype=torch.float32, device='cpu'),
+                    "scores": torch.zeros(0, dtype=torch.float, device='cpu'),
+                    "labels": torch.zeros(0, dtype=torch.long, device='cpu')
+                })
+                continue
+            
+            # Get score and class with highest confidence
+            class_conf, class_pred = torch.max(image_pred[:, 5: 5 + num_classes], 1, keepdim=True)
+
+            image_pred_copy = image_pred.clone()
+            image_pred_copy[:, 4:5] *= class_conf
+
+            conf_mask = (image_pred_copy[:, 4] * class_conf.squeeze() >= self.conf_thre).squeeze()
+            # Detections ordered as (x1, y1, x2, y2, obj_conf, class_conf, class_pred)
+            detections = torch.cat((image_pred_copy[:, :5], class_pred), 1)
+
+            if filtering:
+                detections = detections[conf_mask]
+
+            if len(detections) == 0:
+                output.append({
+                    "boxes": torch.zeros(0, 4, dtype=torch.float32, device='cpu'),
+                    "scores": torch.zeros(0, dtype=torch.float, device='cpu'),
+                    "labels": torch.zeros(0, dtype=torch.long, device='cpu')
+                })
+                continue
+
+            nms_out_index = self.batched_nms_coordinate_trick(detections[:, :4], detections[:, 4], detections[:, 5],
+                                                        nms_thre, width=width, height=height)
+
+            if filtering:
+                detections = detections[nms_out_index]
+
+            # print(detections[:,4])
+            output.append({
+                "boxes": detections[:, :4].to('cpu'),
+                "scores": detections[:, 4].to('cpu'),
+                "labels": detections[:, -1].long().to('cpu')
+            })
+
+        return output
+
+    def batched_nms_coordinate_trick(self, boxes, scores, idxs, iou_threshold, width, height):
+        # adopted from torchvision nms, but faster
+        if boxes.numel() == 0:
+            return torch.empty((0,), dtype=torch.int64, device=boxes.device)
+        max_dim = max([width, height])
+        offsets = idxs * float(max_dim + 1)
+        boxes_for_nms = boxes + offsets[:, None]
+        keep = torchvision.ops.nms(boxes_for_nms, scores, iou_threshold)
+        return keep

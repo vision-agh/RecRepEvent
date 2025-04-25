@@ -43,7 +43,7 @@ class EventDatasetRepresentation(Dataset):
         # lazily open
         if self._h5f is None:
             self._h5f   = h5py.File(self.filepath, "r")
-            self._ds_ev = self._h5f["representation"]
+            self._ds_ev = self._h5f["representations"]
             self._ds_bb = self._h5f["bboxes"]
 
         # figure out our slice in the flat arrays
@@ -57,7 +57,15 @@ class EventDatasetRepresentation(Dataset):
         bb_np = self._ds_bb[b_start:b_end]      # shape = (n_bb, 5)
 
         rep = torch.from_numpy(ev_np)
-        bbox = torch.from_numpy(bb_np)
+        bbox = torch.from_numpy(bb_np).float()
+
+
+        rep = transforms.Resize((224, 224))(rep)
+
+        bbox[:, 0] *= 224 / 304  # x1
+        bbox[:, 1] *= 224 / 240 # y1
+        bbox[:, 2] *= 224 / 304  # x2
+        bbox[:, 3] *= 224 / 240 # y2
 
 
         return rep, bbox

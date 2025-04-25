@@ -29,6 +29,7 @@ def get_item_transform(
         rep = get_optimized_representation(
             reshaped_return_data, num_events, height, width
         )
+        rep = rep.transpose(2, 0, 1)
 
     elif "EventStack" in representation_name:
         reshaped_return_data["p"] = (reshaped_return_data["p"] + 1) // 2
@@ -39,12 +40,13 @@ def get_item_transform(
         )
         post_stack = transformation.post_stack(pre_stack)
         rep = post_stack.transpose(0, 1, 3, 2)[..., 0]
+        rep = rep.transpose(2, 0, 1)
 
     elif "ToImage" in representation_name:
         transformation = tonic_transforms.ToImage((width, height, 2))
         reshaped_return_data["p"] = (reshaped_return_data["p"] + 1) // 2
         rep = transformation(reshaped_return_data)
-        rep = rep.transpose(1, 2, 0)
+        rep = rep.transpose(0, 1, 2)
 
     elif "TORE" in representation_name.upper():
         k = 6
@@ -55,11 +57,10 @@ def get_item_transform(
             reshaped_return_data["p"],
         )
         # Normalize the data for TORE representation conversion
-        x = x - min(x) + 1
-        y = y - min(y) + 1
         sampleTimes = ts[-1]
-        frameSize = (max(y), max(x))
+        frameSize = (cfg["sensor_size"]["H"], cfg["sensor_size"]["W"])
         rep = events2ToreFeature(x, y, ts, pol, sampleTimes, k, frameSize)
+        rep = rep.transpose(2, 0, 1)
 
     elif "ToTimesurface" in representation_name:
         reshaped_return_data["p"] = ((reshaped_return_data["p"] + 1) / 2).astype(
@@ -77,7 +78,7 @@ def get_item_transform(
 
         rep = transform(reshaped_return_data, idx)
         rep = rep.reshape((-1, rep.shape[-2], rep.shape[-1]))
-        rep = rep.transpose(1, 2, 0)
+        rep = rep.transpose(0, 1, 2)
         rep *= 255
 
     elif "Encoder" in representation_name:
