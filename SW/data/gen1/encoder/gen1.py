@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from data.readers.extractor_gen1 import Gen1Reader
 from data.utils.bbox_filters import apply_filters
-from data.base_encoder import EventDatasetEncoder
+from data.gen1.encoder.base import EventDatasetEncoder
 
 
 def iter_samples(file_path: str, cfg: dict):

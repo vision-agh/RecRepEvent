@@ -4,7 +4,7 @@ import yaml
 
 from omegaconf import OmegaConf
 from models.detection.resnet import ResNetDetectionModel
-from data.gen1_2_encoder import Gen1
+from data.gen1.encoder.gen1 import Gen1
 from models.recurrent.encoder import Encoder
 
 from models.detection.utils.convert_bbox import convert_to_training_format

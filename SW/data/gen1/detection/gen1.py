@@ -9,11 +9,9 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from data.base_representation import EventDatasetRepresentation
+from data.gen1.detection.base import EventDatasetRepresentation
 from representations.get_representation import get_item_transform
 from models.recurrent.encoder import Encoder
-
-
 
 class Gen1(L.LightningDataModule):
     def __init__(self, cfg):

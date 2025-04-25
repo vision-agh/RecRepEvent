@@ -6,7 +6,7 @@ import omegaconf
 import multiprocessing as mp
 import wandb
 
-from data.gen1_2_encoder import Gen1
+from data.gen1.encoder.gen1 import Gen1
 from models.recurrent.autoencoder import AutoEncoder
 from lightning.pytorch.loggers.wandb import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor

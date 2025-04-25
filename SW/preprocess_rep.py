@@ -5,7 +5,7 @@ import lightning as L
 from lightning.pytorch.loggers.wandb import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 
-from data.gen1_2_representation import Gen1
+from data.gen1.detection.gen1 import Gen1
 from representations.ordering_event_representation import get_optimized_representation
 import matplotlib.pyplot as plt
 from representations.get_representation import get_item_transform

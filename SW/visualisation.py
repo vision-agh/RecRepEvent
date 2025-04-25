@@ -6,7 +6,7 @@ import argparse
 import multiprocessing as mp
 import matplotlib.pyplot as plt
 
-from data.gen1_2_encoder import Gen1
+from data.gen1.encoder.gen1 import Gen1
 from models.recurrent.encoder import Encoder
 from utils.pack_events import pack_events_parallel
 from utils.unpack_embeddings import unpack_embeddings
