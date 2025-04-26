@@ -167,11 +167,6 @@ class TrainTransform:
     def __call__(self, image, targets, input_dim):
         boxes = targets[:, :4].copy()
         labels = targets[:, 4].copy()
-
-        mask_b = np.minimum(boxes[:,2] - boxes[:,0], boxes[:,3] - boxes[:,1]) > 1
-        boxes = boxes[mask_b]
-        labels = labels[mask_b]
-
         if len(boxes) == 0:
             targets = np.zeros((self.max_labels, 5), dtype=np.float32)
             image, r_o = preproc(image, input_dim)

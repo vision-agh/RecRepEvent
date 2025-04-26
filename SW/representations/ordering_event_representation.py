@@ -9,7 +9,7 @@ N_CHANNELS = 12
 
 
 def get_optimized_representation(reshaped_return_data, num_events, height, width):
-    window_indexes = [0, 2, 2, 3, 5, 0, 0, 4, 2, 6, 1, 1]
+    window_indexes = [3, 1, 1, 2, 5, 3, 3, 4, 1, 6, 0, 0]
     functions = [
         "timestamp",
         "timestamp_pos",

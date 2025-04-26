@@ -38,7 +38,7 @@ representation: Encoder
 encoder_checkpoint: /net/scratch/hscra/plgrid/plgjeziorek/checkpoints/best_model_MyGRU_calibrated.ckpt
 
 num_processes: 8    # number of processes to use for data generation
-num_workers: 16      # number of workers to use for data loading
+num_workers: 32      # number of workers to use for data loading
 batch_size: 64
 
 augmentation:

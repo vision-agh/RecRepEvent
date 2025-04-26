@@ -12,6 +12,8 @@ from torchmetrics import Accuracy
 from torchmetrics.classification import ConfusionMatrix
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
+from data.gen1.detection.gen1 import Gen1
+
 
 from models.detection.utils.convert_bbox import convert_to_training_format
 from models.detection.resnet import ResNetDetectionModel
@@ -51,7 +53,7 @@ class LNDetection(L.LightningModule):
         # name of LRScheduler
         self.scheduler = "yoloxwarmcos"
         # last #epoch to close augmention like mosaic
-        self.no_aug_epochs = 15
+        self.no_aug_epochs = 97
         # apply EMA during training
         self.ema = True
         # weight decay of optimizer
@@ -141,7 +143,6 @@ class LNDetection(L.LightningModule):
                 "frequency": 1,
             },
         }
-
 
     def forward(self, model, data):
         target = convert_to_training_format(data['bboxes'].float(), data['batch_idx'], data['batch_idx'].max().item() + 1)

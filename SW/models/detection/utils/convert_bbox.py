@@ -1,7 +1,7 @@
 import torch
 
 def convert_to_training_format(bbox, batch, batch_size):
-    max_detections = 100
+    max_detections = 300
     targets = torch.zeros(size=(batch_size, max_detections, 5), dtype=torch.float32, device=bbox.device)
     unique, counts = torch.unique(batch, return_counts=True)
     counter = _sequential_counter(counts)

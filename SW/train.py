@@ -4,6 +4,7 @@ import lightning as L
 
 from lightning.pytorch.loggers.wandb import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
+from lightning.pytorch.callbacks import Callback
 
 from data.gen1.detection.gen1 import Gen1
 from representations.ordering_event_representation import get_optimized_representation
@@ -12,7 +13,15 @@ from representations.get_representation import get_item_transform
 
 from models.detection.detection import LNDetection
 
+class MosaicSwitchCallback(Callback):
+        def on_train_epoch_start(self, trainer, pl_module):
+            if trainer.current_epoch > 100 - 15:
+                ds: Gen1 = trainer.datamodule.train_data
+                ds.set_mosaic_prob(0.0)
+                print("Mosaic augmentation disabled")
+
 def main(args):
+    L.seed_everything(42)
     # Load the configuration file
     with open(args.config, 'r') as file:
         config = yaml.safe_load(file)
@@ -45,12 +54,12 @@ def main(args):
     )
 
     trainer = L.Trainer(max_epochs=100, 
-                        log_every_n_steps=1, 
+                        log_every_n_steps=250, 
                         logger=wandb_logger,
-                        callbacks=[lr_monitor, checkpoint_callback],
+                        callbacks=[lr_monitor, checkpoint_callback, MosaicSwitchCallback()],
                         deterministic=True,
                         check_val_every_n_epoch=2,
-                        precision='16-mixed',
+                        precision=16,
                         gradient_clip_val=1.0,
                         gradient_clip_algorithm='value',
                         devices=1)

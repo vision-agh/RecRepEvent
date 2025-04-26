@@ -1,6 +1,6 @@
-name: Gen1
-data_dir: /home/imperator/Datasets/gen1
-dir_to_save: /home/imperator/Datasets/gen1_processed
+name: Gen4
+data_dir: /net/storage/pr3/plgrid/plgg_dvs_phd/Detection/gen4
+dir_to_save: /net/scratch/hscra/plgrid/plgjeziorek/Datasets/gen4_processed
 
 sensor_size:
   W: 720
@@ -8,7 +8,7 @@ sensor_size:
 image_size:
   W: 640
   H: 640
-time_window: 100000
+time_window: 50000
 num_events: 70000
 
 encoder:
@@ -35,7 +35,8 @@ apply_psee_bbox_filter: true
 apply_faulty_bbox_filter: true
 
 representation: Encoder
+encoder_checkpoint: /net/scratch/hscra/plgrid/plgjeziorek/checkpoints/best_model_MyGRU_calibrated.ckpt
 
 num_processes: 8    # number of processes to use for data generation
-num_workers: 1      # number of workers to use for data loading
-batch_size: 1
+num_workers: 8      # number of workers to use for data loading
+batch_size: 16

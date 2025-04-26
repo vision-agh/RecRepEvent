@@ -7,6 +7,7 @@ import multiprocessing as mp
 import wandb
 
 from data.gen1.encoder.gen1 import Gen1
+from data.gen4.encoder.gen4 import Gen4
 from models.recurrent.autoencoder import AutoEncoder
 from lightning.pytorch.loggers.wandb import WandbLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
@@ -17,7 +18,10 @@ def main(args):
     # Load the configuration file
     cfg = omegaconf.OmegaConf.load(args.config)
 
-    dm = Gen1(cfg=cfg)
+    if cfg.name == "Gen1":
+        dm = Gen1(cfg=cfg)
+    elif cfg.name == "Gen4":
+        dm = Gen4(cfg=cfg)
     dm.prepare_data()
     dm.setup()
 
@@ -93,7 +97,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a model with a configuration file.")
     parser.add_argument('--config', 
                         type=str,
-                        default='config/gen1.yaml',
+                        default='config/gen4.yaml',
                         help='Path to the configuration file.')
 
     args = parser.parse_args()

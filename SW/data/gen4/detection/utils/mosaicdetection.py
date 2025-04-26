@@ -41,9 +41,9 @@ class MosaicDetection(Dataset):
 
     def __init__(
         self, dataset, img_size, mosaic=True, preproc=None,
-        degrees=0.373, translate=0.245, mosaic_scale=(0.9, 1.1),
-        mixup_scale=(0.5, 1.5), shear=0.602, enable_mixup=True,
-        mosaic_prob=1.0, mixup_prob=0.0, *args
+        degrees=10.0, translate=0.1, mosaic_scale=(0.5, 1.5),
+        mixup_scale=(0.5, 1.5), shear=2.0, enable_mixup=True,
+        mosaic_prob=1.0, mixup_prob=1.0, *args
     ):
         """
 
@@ -89,9 +89,6 @@ class MosaicDetection(Dataset):
     def __len__(self):
         return self.num_samples
     
-    def set_mosaic_prob(self, prob):
-        self.mosaic_prob = prob
-    
     def get_sample(self, idx):
         # lazily open
         if self._h5f is None:
@@ -130,7 +127,7 @@ class MosaicDetection(Dataset):
             xc = int(random.uniform(0.5 * input_w, 1.5 * input_w))
 
             # 3 additional image indices
-            indices = [idx] + [random.randint(0, self.num_samples - 1) for _ in range(3)]
+            indices = [idx] + [random.randint(0, self.num_samples) for _ in range(3)]
 
             for i_mosaic, index in enumerate(indices):
                 img, _labels = self.get_sample(index)
