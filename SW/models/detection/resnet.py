@@ -81,9 +81,10 @@ class DetectionBackbone(torch.nn.Module):
 
 class ResNetDetectionModel(torch.nn.Module):
     
-    def __init__(self, num_classes=2):
+    def __init__(self, channels=12,
+                        num_classes=2):
         super(ResNetDetectionModel, self).__init__()
-        self.backbone = DetectionBackbone(12, 'resnet50', False)
+        self.backbone = DetectionBackbone(channels, 'resnet50', False)
 
         self.num_classes = num_classes
         self.conf_thre = 0.0001
@@ -92,6 +93,13 @@ class ResNetDetectionModel(torch.nn.Module):
                                 width=1,
                                 strides=[7,14,28],
                                 in_channels=[512, 1024, 2048])
+
+        for m in self.modules():
+                if isinstance(m, nn.BatchNorm2d):
+                    m.eps = 1e-3
+                    m.momentum = 0.03
+
+        self.head.initialize_biases(1e-2)
 
     def forward(self, x, targets=None):
         backbone_outs = self.backbone(x)

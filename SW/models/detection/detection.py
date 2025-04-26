@@ -22,17 +22,22 @@ GEN1_CLASSES = {"car": 0, "pedestrian": 1}
 GEN4_CLASSES = {0: "car", 1: "pedestrian", 2: "bicycle", 3: "motorcycle", 4: "bus", 5: "truck"}
 
 class LNDetection(L.LightningModule):
-    def __init__(self, cfg_dataset):
+    def __init__(self, config, train_dataloader_len=None):
         super().__init__()
         self.map = MeanAveragePrecision()
-        self.model = ResNetDetectionModel(num_classes=2)
+
+        if config["representation"] == "ToImage":
+            self.model = ResNetDetectionModel(channels=2,
+                                              num_classes=2)
+        else:
+            self.model = ResNetDetectionModel(channels=12,
+                                              num_classes=2)
         self.ema_model = ModelEMA(self.model, 0.9998)
 
         self.save_hyperparameters()
 
-        self.batch_size = 16
+        self.batch_size = config["batch_size"]
         self.num_classes = 2
-
         # --------------  training config --------------------- #
         # epoch number used for warmup
         self.warmup_epochs = 5
@@ -54,9 +59,11 @@ class LNDetection(L.LightningModule):
         # momentum of optimizer
         self.momentum = 0.9
 
+        self.train_dataloader_len = train_dataloader_len
+
     def get_optimizer(self, batch_size):
         if self.warmup_epochs > 0:
-            lr = self.warmup_lr
+            lr = 1
         else:
             lr = self.basic_lr_per_img * batch_size
         pg0, pg1, pg2 = [], [], []  # optimizer parameter groups
@@ -92,24 +99,52 @@ class LNDetection(L.LightningModule):
         return scheduler
 
     def configure_optimizers(self):
-        self.max_iter = len(self.train_loader)
-
+        # 1. build optimizer
         optimizer = self.get_optimizer(self.batch_size)
-        scheduler = self.get_lr_scheduler(
+        # 2. build your custom scheduler (no optimizer inside yet)
+        custom_sched = self.get_lr_scheduler(
             lr=self.basic_lr_per_img * self.batch_size,
-            iters_per_epoch=self.max_iter,
+            iters_per_epoch=self.train_dataloader_len,
+        )
+        # 3. wrap it in a PyTorch LambdaLR
+        torch_sched = torch.optim.lr_scheduler.LambdaLR(
+            optimizer,
+            lr_lambda=lambda step: custom_sched.update_lr(step)
         )
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
-                "scheduler": scheduler,
-                "interval": "step",
+                "scheduler": torch_sched,
+                "interval": "step",   # call .step() every optimizer.step()
+                "frequency": 1,
+            },
+        }
+    
+    def configure_optimizers(self):
+        # 1. build optimizer
+        optimizer = self.get_optimizer(self.batch_size)
+        # 2. build your custom scheduler (no optimizer inside yet)
+        custom_sched = self.get_lr_scheduler(
+            lr=self.basic_lr_per_img * self.batch_size,
+            iters_per_epoch=self.train_dataloader_len,
+        )
+        # 3. wrap it in a PyTorch LambdaLR
+        torch_sched = torch.optim.lr_scheduler.LambdaLR(
+            optimizer,
+            lr_lambda=lambda step: custom_sched.update_lr(step)
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": torch_sched,
+                "interval": "step",   # call .step() every optimizer.step()
                 "frequency": 1,
             },
         }
 
-    def forward(self, model, data):  
-        target = convert_to_training_format(data['bboxes'].float(), data['batch_idx'], self.batch_size)
+
+    def forward(self, model, data):
+        target = convert_to_training_format(data['bboxes'].float(), data['batch_idx'], data['batch_idx'].max().item() + 1)
         x = model(data['representations'], target)
         return x
 
@@ -130,7 +165,7 @@ class LNDetection(L.LightningModule):
             self.ema_model.update(self.model)
 
     def validation_step(self, batch, batch_idx):
-        preds = self.forward(model=self.ema_model.ema,
+        preds = self.forward(model=self.ema_model.ema.to(batch['representations'].device),
                              data=batch)
 
         gts = []
@@ -160,7 +195,7 @@ class LNDetection(L.LightningModule):
     
 
     def test_step(self, batch, batch_idx):
-        preds = self.forward(model=self.ema_model.ema,
+        preds = self.forward(model=self.ema_model.ema.to(batch['representations'].device),
                              data=batch)
         gts = []
         unique_indices = batch["batch_idx"].unique(sorted=True)
@@ -199,6 +234,8 @@ class LNDetection(L.LightningModule):
 
         if ev_img.shape[1] > 2:
             ev_img = ev_img[:, :3, :, :]
+        elif ev_img.shape[1] == 2:
+            ev_img = torch.cat([ev_img, torch.zeros_like(ev_img)], dim=1)
             
         class_id_to_label = {int(v): k for k, v in GEN1_CLASSES.items()}
         images = []

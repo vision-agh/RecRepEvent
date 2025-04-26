@@ -17,11 +17,18 @@ def main(args):
     with open(args.config, 'r') as file:
         config = yaml.safe_load(file)
 
+    if args.representation:
+        config["representation"] = args.representation
+
+    print(config)
+
     dm = Gen1(cfg=config)
     dm.prepare_data()
     dm.setup()
 
-    model = LNDetection(config)
+    model = LNDetection(config, train_dataloader_len=len(dm.train_dataloader()))
+
+    print(model)
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
     wandb_logger = WandbLogger(project=f'Detection Recurrent', 
@@ -39,14 +46,19 @@ def main(args):
 
     trainer = L.Trainer(max_epochs=100, 
                         log_every_n_steps=1, 
-                        gradient_clip_val=1.0,
                         logger=wandb_logger,
                         callbacks=[lr_monitor, checkpoint_callback],
                         deterministic=True,
                         check_val_every_n_epoch=2,
+                        precision='16-mixed',
+                        gradient_clip_val=1.0,
+                        gradient_clip_algorithm='value',
                         devices=1)
 
     trainer.fit(model, dm)
+
+    model = LNDetection.load_from_checkpoint(checkpoint_callback.best_model_path)
+    trainer.test(model, datamodule=dm)
 
 if __name__ == "__main__":
     import argparse
@@ -55,5 +67,9 @@ if __name__ == "__main__":
                         type=str,
                         default='config/gen1.yaml',
                         help='Path to the configuration file.')
+    parser.add_argument('--representation',
+                        type=str,
+                        default=None,
+                        help='Representation to use for training.')
     args = parser.parse_args()
     main(args)

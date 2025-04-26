@@ -13,6 +13,9 @@ from data.gen1.detection.base import EventDatasetRepresentation
 from representations.get_representation import get_item_transform
 from models.recurrent.encoder import Encoder
 
+from data.gen1.detection.utils.mosaicdetection import MosaicDetection
+from data.gen1.detection.utils.data_augment import TrainTransform
+
 class Gen1(L.LightningDataModule):
     def __init__(self, cfg):
         super().__init__()
@@ -22,6 +25,11 @@ class Gen1(L.LightningDataModule):
         # representation dimensions (fallback to original defaults)
         self.height = cfg.get("height", 240)
         self.width = cfg.get("width", 304)
+
+        if cfg["representation"] == "ToImage":
+            self.img_size = (224, 224, 2)
+        else:
+            self.img_size = (224, 224, 12)
 
     def prepare_data(self):
         os.makedirs(self.save_dir, exist_ok=True)
@@ -106,7 +114,6 @@ class Gen1(L.LightningDataModule):
                             cfg=self.cfg,
                             encoder=encoder,
                         )
-                        print(rep.shape)
                         rep = rep.reshape(-1, self.height, self.width)
 
                         # write representation frames
@@ -138,9 +145,30 @@ class Gen1(L.LightningDataModule):
         base = Path(self.save_dir)
         if not base.exists():
             raise FileNotFoundError(f"Representation files not found at {base}")
-        self.train_data = EventDatasetRepresentation(base / "train.h5", self.cfg, augment=True)
-        self.val_data   = EventDatasetRepresentation(base / "val.h5",   self.cfg, augment=False)
-        self.test_data  = EventDatasetRepresentation(base / "test.h5",  self.cfg, augment=False)
+        
+        self.train_data = MosaicDetection(base / "train.h5",   
+                                          img_size=self.img_size,
+                                            mosaic=False,
+                                            preproc=TrainTransform(
+                                                max_labels=120,
+                                                flip_prob=0.5,
+                                                hsv_prob=0.0))
+        
+        self.val_data   = MosaicDetection(base / "val.h5",   
+                                          img_size=self.img_size,
+                                            mosaic=False,
+                                            preproc=TrainTransform(
+                                                max_labels=120,
+                                                flip_prob=0.0,
+                                                hsv_prob=0.0))
+        
+        self.test_data  = MosaicDetection(base / "test.h5",   
+                                          img_size=self.img_size,
+                                            mosaic=False,
+                                            preproc=TrainTransform(
+                                                max_labels=120,
+                                                flip_prob=0.0,
+                                                hsv_prob=0.0))
 
     def collate_fn(self, batch):
         reps, bbs = zip(*batch)
@@ -170,6 +198,7 @@ class Gen1(L.LightningDataModule):
             num_workers=self.cfg["num_workers"],
             shuffle=True,
             collate_fn=self.collate_fn,
+            persistent_workers=True
         )
 
     def val_dataloader(self):
@@ -179,6 +208,7 @@ class Gen1(L.LightningDataModule):
             num_workers=self.cfg["num_workers"],
             shuffle=False,
             collate_fn=self.collate_fn,
+            persistent_workers=True
         )
 
     def test_dataloader(self):
@@ -188,4 +218,5 @@ class Gen1(L.LightningDataModule):
             num_workers=self.cfg["num_workers"],
             shuffle=False,
             collate_fn=self.collate_fn,
+            persistent_workers=True
         )
