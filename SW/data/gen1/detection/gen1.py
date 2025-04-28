@@ -196,6 +196,7 @@ class Gen1(L.LightningDataModule):
             self.train_data,
             batch_size=self.cfg["batch_size"],
             num_workers=self.cfg["num_workers"],
+            pin_memory=True,
             shuffle=True,
             collate_fn=self.collate_fn,
             persistent_workers=False
@@ -206,6 +207,7 @@ class Gen1(L.LightningDataModule):
             self.val_data,
             batch_size=self.cfg["batch_size"],
             num_workers=self.cfg["num_workers"],
+            pin_memory=True,
             shuffle=False,
             collate_fn=self.collate_fn,
             persistent_workers=True
@@ -216,6 +218,7 @@ class Gen1(L.LightningDataModule):
             self.test_data,
             batch_size=self.cfg["batch_size"],
             num_workers=self.cfg["num_workers"],
+            pin_memory=True,
             shuffle=False,
             collate_fn=self.collate_fn,
             persistent_workers=True

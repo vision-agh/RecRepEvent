@@ -23,13 +23,13 @@ def get_item_transform(
     if "ToVoxelGrid" in representation_name:
         transformation = tonic_transforms.ToVoxelGrid((width, height, 2), n_time_bins=12)
         rep = transformation(reshaped_return_data)
-        rep = rep.transpose(0, 2, 3, 1)[..., 0]
+        rep = rep.transpose(0, 2, 3, 1)[..., 0] * 255
 
     elif "MixedDensityEventStack" in representation_name:
         rep = get_optimized_representation(
             reshaped_return_data, num_events, height, width
         )
-        rep = rep.transpose(2, 0, 1)
+        rep = rep.transpose(2, 0, 1) * 255
 
     elif "EventStack" in representation_name:
         reshaped_return_data["p"] = (reshaped_return_data["p"] + 1) // 2

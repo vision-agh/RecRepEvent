@@ -4,6 +4,7 @@ import wandb
 import numpy as np
 import matplotlib.pyplot as plt
 
+from copy import deepcopy
 from typing import Dict, Tuple
 import torch.nn as nn
 from torch.nn.functional import softmax
@@ -34,6 +35,7 @@ class LNDetection(L.LightningModule):
         else:
             self.model = ResNetDetectionModel(channels=12,
                                               num_classes=2)
+            
         self.ema_model = ModelEMA(self.model, 0.9998)
 
         self.save_hyperparameters()
@@ -53,7 +55,7 @@ class LNDetection(L.LightningModule):
         # name of LRScheduler
         self.scheduler = "yoloxwarmcos"
         # last #epoch to close augmention like mosaic
-        self.no_aug_epochs = 97
+        self.no_aug_epochs = 15
         # apply EMA during training
         self.ema = True
         # weight decay of optimizer
@@ -101,14 +103,11 @@ class LNDetection(L.LightningModule):
         return scheduler
 
     def configure_optimizers(self):
-        # 1. build optimizer
         optimizer = self.get_optimizer(self.batch_size)
-        # 2. build your custom scheduler (no optimizer inside yet)
         custom_sched = self.get_lr_scheduler(
             lr=self.basic_lr_per_img * self.batch_size,
             iters_per_epoch=self.train_dataloader_len,
         )
-        # 3. wrap it in a PyTorch LambdaLR
         torch_sched = torch.optim.lr_scheduler.LambdaLR(
             optimizer,
             lr_lambda=lambda step: custom_sched.update_lr(step)
@@ -117,29 +116,7 @@ class LNDetection(L.LightningModule):
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": torch_sched,
-                "interval": "step",   # call .step() every optimizer.step()
-                "frequency": 1,
-            },
-        }
-    
-    def configure_optimizers(self):
-        # 1. build optimizer
-        optimizer = self.get_optimizer(self.batch_size)
-        # 2. build your custom scheduler (no optimizer inside yet)
-        custom_sched = self.get_lr_scheduler(
-            lr=self.basic_lr_per_img * self.batch_size,
-            iters_per_epoch=self.train_dataloader_len,
-        )
-        # 3. wrap it in a PyTorch LambdaLR
-        torch_sched = torch.optim.lr_scheduler.LambdaLR(
-            optimizer,
-            lr_lambda=lambda step: custom_sched.update_lr(step)
-        )
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": torch_sched,
-                "interval": "step",   # call .step() every optimizer.step()
+                "interval": "step",
                 "frequency": 1,
             },
         }
@@ -162,19 +139,28 @@ class LNDetection(L.LightningModule):
         return total_loss
 
     def on_before_backward(self, loss: torch.Tensor) -> None:
-        if self.ema_model:
+        if self.ema:
             self.ema_model.update(self.model)
 
+    def on_save_checkpoint(self, checkpoint):
+        if self.ema:
+            ema_state = self.ema_model.ema.state_dict()
+            prefixed = {f"model.{k}": v for k, v in ema_state.items()}
+            checkpoint["state_dict"] = prefixed
+
     def validation_step(self, batch, batch_idx):
-        preds = self.forward(model=self.ema_model.ema.to(batch['representations'].device),
-                             data=batch)
+        if self.ema:
+            model = self.ema_model.ema.to(batch['representations'].device)
+            preds = self.forward(model=model,data=batch)
+        else:
+            preds = self.forward(model=self.model, data=batch)
 
         gts = []
         unique_indices = batch["batch_idx"].unique(sorted=True)
         for idx in unique_indices:
             mask = (batch["batch_idx"] == idx)
             bbox = batch["bboxes"][mask].clone()
-            bbox[:, 2:4] += bbox[:, :2]  # zamiana z xywh na xyxy
+            bbox[:, 2:4] += bbox[:, :2]
             gts.append({
                 "boxes": bbox[:, :4].cpu(),
                 "labels": bbox[:, 4].cpu().long()
@@ -196,7 +182,7 @@ class LNDetection(L.LightningModule):
     
 
     def test_step(self, batch, batch_idx):
-        preds = self.forward(model=self.ema_model.ema.to(batch['representations'].device),
+        preds = self.forward(model=self.model,
                              data=batch)
         gts = []
         unique_indices = batch["batch_idx"].unique(sorted=True)
@@ -227,7 +213,6 @@ class LNDetection(L.LightningModule):
 
 
     def log_detections(self, val_pred: dict) -> None:
-        # Create 2d image from pos
         batch = val_pred['batch']
         gts = val_pred['gts']
         preds = val_pred['preds']

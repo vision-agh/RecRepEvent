@@ -18,7 +18,7 @@ class MosaicSwitchCallback(Callback):
             if trainer.current_epoch > 100 - 15:
                 ds: Gen1 = trainer.datamodule.train_data
                 ds.set_mosaic_prob(0.0)
-                print("Mosaic augmentation disabled")
+                pl_module.log("mosaic_disabled", 1, prog_bar=True)
 
 def main(args):
     L.seed_everything(42)
@@ -29,14 +29,13 @@ def main(args):
     if args.representation:
         config["representation"] = args.representation
 
-    print(config)
-
     dm = Gen1(cfg=config)
     dm.prepare_data()
     dm.setup()
 
     model = LNDetection(config, train_dataloader_len=len(dm.train_dataloader()))
 
+    print(config)
     print(model)
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
@@ -54,19 +53,19 @@ def main(args):
     )
 
     trainer = L.Trainer(max_epochs=100, 
-                        log_every_n_steps=250, 
+                        log_every_n_steps=200, 
                         logger=wandb_logger,
                         callbacks=[lr_monitor, checkpoint_callback, MosaicSwitchCallback()],
-                        deterministic=True,
-                        check_val_every_n_epoch=2,
-                        precision=16,
+                        deterministic=False,
+                        check_val_every_n_epoch=1,
+                        precision="16-mixed",
                         gradient_clip_val=1.0,
                         gradient_clip_algorithm='value',
                         devices=1)
 
     trainer.fit(model, dm)
 
-    model = LNDetection.load_from_checkpoint(checkpoint_callback.best_model_path)
+    model = LNDetection.load_from_checkpoint("/net/scratch/hscra/plgrid/plgjeziorek/RecRepEvent/SW/checkpoints/Detection_Gen1_Encoder-v1.ckpt")
     trainer.test(model, datamodule=dm)
 
 if __name__ == "__main__":
