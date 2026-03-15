@@ -1,7 +1,10 @@
 `timescale 1ns / 1ps
 
+(* use_dsp48 = "no" *)
+
 module matrix_multiplication #(
     parameter int INPUT_DIM = 4,
+    parameter int INPUT_PRECISION = 8,    
     parameter int OUTPUT_DIM = 8,
     parameter int PRECISION = 8,
     parameter int MULTIPLIER = 0,
@@ -10,7 +13,7 @@ module matrix_multiplication #(
 )( 
     input  logic                        clk,
     input  logic                        reset,
-    input  logic signed [PRECISION:0]   feature_matrix [INPUT_DIM-1:0],
+    input  logic signed [INPUT_PRECISION:0]   feature_matrix [INPUT_DIM-1:0],
     input  logic signed [PRECISION:0]   weight_matrix  [OUTPUT_DIM-1:0][INPUT_DIM-1:0],
     input  logic signed [31:0]          bias           [OUTPUT_DIM-1:0],
     output logic        [PRECISION-1:0] output_matrix  [OUTPUT_DIM-1:0]
@@ -21,7 +24,7 @@ module matrix_multiplication #(
     logic signed [63:0]         debug_mul  [OUTPUT_DIM-1:0];
     
     logic signed [63:0]         product  [OUTPUT_DIM-1:0];
-    logic signed [PRECISION:0]  temp_diff;
+    logic signed [INPUT_PRECISION:0]  temp_diff;
     logic signed [PRECISION:0]  temp_sum;
     logic [PRECISION-1:0]       saturated_result;
 

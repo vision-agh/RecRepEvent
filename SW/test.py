@@ -1,86 +1,76 @@
-import argparse
-import torch
 import yaml
-
-from omegaconf import OmegaConf
-from models.detection.resnet import ResNetDetectionModel
-from data.gen1.encoder.gen1 import Gen1
-from models.recurrent.encoder import Encoder
-
-from models.detection.utils.convert_bbox import convert_to_training_format
-from utils.unpack_embeddings import unpack_embeddings
-
-import torchvision.transforms as transforms
-from time import time
-
-with open("config/general.yaml", 'r') as file:
-    config = yaml.safe_load(file)
-
-config["remove_empty_pixels"] = False
-config["crop_events_spatially"] = False
-
-dm = Gen1(cfg=config)
-dm.setup()
+import lightning as L
 
 
-cfg = OmegaConf.create({
-    "channels": 12,
-    "num_classes": 2,
-    "weights": None})
+from lightning.pytorch.loggers.wandb import WandbLogger
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 
-enc = Encoder(input_size=2, hidden_size=12, num_bits=8).eval().cuda()
-enc.compile()
+from data.gen1.detection.gen1 import Gen1
+from representations.ordering_event_representation import get_optimized_representation
+import matplotlib.pyplot as plt
+from representations.get_representation import get_item_transform
 
-checkpoint = torch.load("checkpoints/my_gru_checkpoint-v7.ckpt", weights_only=True)
-encoder_weights = {k.replace("encoder.", ""): v for k, v in checkpoint["state_dict"].items() if k.startswith("encoder.")}
-enc.load_state_dict(encoder_weights, strict=False)
+from models.detection.detection import LNDetection
 
-model = ResNetDetectionModel(cfg, num_classes=2).cuda()
-optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.0001)
-optimizer_enc = torch.optim.AdamW(enc.parameters(), lr=0.001, weight_decay=0.0001)
+import matplotlib.pyplot as plt
+def main(args):
+    # Load the configuration file
+    with open(args.config, 'r') as file:
+        config = yaml.safe_load(file)
 
-print("1", torch.cuda.memory_allocated() / 1024 ** 2)
+    dm = Gen1(cfg=config)
+    dm.setup()
 
-for i, batch in enumerate(dm.val_dataloader()):
+    print(dm.val_data)
 
-    t1 = time()
-    events = batch['packed_events']
-    counts_per_pixel = batch['counts_per_pixel']
-    bboxes = batch['bboxes']
-    batch_bbox = batch['batch_bbox']
+
+    for idx, batch in enumerate(dm.val_dataloader()):
+
+        if idx > 2:
+            dm.val_data.change_mosaic_prob(0.0)
+        print(batch['representations'][0].shape)
+
+        img = batch['representations'][0].numpy()
+        bbox = batch['bboxes'].numpy()
+        batch_idx = batch['batch_idx'].numpy()
+
+        print(bbox.shape)
+        img = img.transpose(1, 2, 0)
+        imgx = img[..., :3]
+
+        bbox = bbox[batch_idx == 0]
+        # add bounding boxe
+        import numpy as np
+
+        for i in range(bbox.shape[0]):
+            cx, cy, w, h = bbox[i, 1:5]
+            if cx == cy == w == h == 0:
+                continue
+
+            print(w, h)
+            x1 = int(cx - w / 2)
+            y1 = int(cy - h / 2)
+            x2 = int(cx + w / 2)
+            y2 = int(cy + h / 2)
+            
+            x1 = np.clip(x1, 0, imgx.shape[1] - 1)
+            y1 = np.clip(y1, 0, imgx.shape[0] - 1)
+            x2 = np.clip(x2, 0, imgx.shape[1] - 1)
+            y2 = np.clip(y2, 0, imgx.shape[0] - 1)
+            imgx[int(y1):int(y2), int(x1), :] = 255
+            imgx[int(y1):int(y2), int(x2), :] = 255
+            imgx[int(y1), int(x1):int(x2), :] = 255
+            imgx[int(y2), int(x1):int(x2), :] = 255
+
+        plt.imshow(imgx.astype('uint8'), vmin=0, vmax=255)
+        plt.show()
     
-    batch_embeddings = []
-    for ev, count in zip(events, counts_per_pixel):
-
-        embeddings = enc(ev.cuda()).cpu()
-
-        u_embeddings = unpack_embeddings(embeddings, 
-                                        config["sensor_size"]["H"], 
-                                        config["sensor_size"]["W"],
-                                        count)
-        
-        batch_embeddings.append(u_embeddings)
-    
-    batch_embeddings = torch.stack(batch_embeddings, dim=0)
-    batch_embeddings = transforms.Resize((224, 224))(batch_embeddings)
-
-    bboxes[:, 0] = bboxes[:, 0] / config["sensor_size"]["W"] * 224
-    bboxes[:, 1] = bboxes[:, 1] / config["sensor_size"]["H"] * 224
-    bboxes[:, 2] = bboxes[:, 2] / config["sensor_size"]["W"] * 224
-    bboxes[:, 3] = bboxes[:, 3] / config["sensor_size"]["H"] * 224
-
-    target = convert_to_training_format(bboxes.float(), batch_bbox, 8)
-
-    preds = model(batch_embeddings.cuda(), target.cuda())
-
-    loss = preds["total_loss"]
-
-    optimizer.zero_grad()
-    optimizer_enc.zero_grad()
-    loss.backward()
-    optimizer.step()
-    optimizer_enc.step()
-
-    print(time() - t1)
-    print(enc.gru1.linear_ih.bias)
-    print(loss)
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Train a model with a configuration file.")
+    parser.add_argument('--config', 
+                        type=str,
+                        default='config/gen1.yaml',
+                        help='Path to the configuration file.')
+    args = parser.parse_args()
+    main(args)

@@ -9,7 +9,11 @@ import torch
 import cv2
 import numpy as np
 
+<<<<<<< HEAD
 from YOLOX.yolox.utils import adjust_box_anns, get_local_rank
+=======
+from yolox.utils import adjust_box_anns, get_local_rank
+>>>>>>> ddd3e44 (update HW files)
 
 from .data_augment import random_affine
 from .datasets_wrapper import Dataset
@@ -89,9 +93,15 @@ class MosaicDetection(Dataset):
     def __len__(self):
         return self.num_samples
     
+<<<<<<< HEAD
     def set_mosaic_prob(self, prob):
         self.mosaic_prob = prob
     
+=======
+    def change_mosaic_prob(self, prob):
+        self.mosaic_prob = prob
+
+>>>>>>> ddd3e44 (update HW files)
     def get_sample(self, idx):
         # lazily open
         if self._h5f is None:
@@ -121,6 +131,10 @@ class MosaicDetection(Dataset):
 
     @Dataset.mosaic_getitem
     def __getitem__(self, idx):
+<<<<<<< HEAD
+=======
+        print(self.mosaic_prob)
+>>>>>>> ddd3e44 (update HW files)
         if self.enable_mosaic and random.random() < self.mosaic_prob:
             mosaic_labels = []
             input_h, input_w, input_c = self.input_dim
@@ -130,7 +144,11 @@ class MosaicDetection(Dataset):
             xc = int(random.uniform(0.5 * input_w, 1.5 * input_w))
 
             # 3 additional image indices
+<<<<<<< HEAD
             indices = [idx] + [random.randint(0, self.num_samples - 1) for _ in range(3)]
+=======
+            indices = [idx] + [random.randint(0, self.num_samples) for _ in range(3)]
+>>>>>>> ddd3e44 (update HW files)
 
             for i_mosaic, index in enumerate(indices):
                 img, _labels = self.get_sample(index)
@@ -142,7 +160,11 @@ class MosaicDetection(Dataset):
                 # generate output mosaic image
                 (h, w, c) = img.shape[:3]
                 if i_mosaic == 0:
+<<<<<<< HEAD
                     mosaic_img = np.full((input_h * 2, input_w * 2, c), 114, dtype=np.float32)
+=======
+                    mosaic_img = np.full((input_h * 2, input_w * 2, c), 114, dtype=np.uint8)
+>>>>>>> ddd3e44 (update HW files)
 
                 # suffix l means large image, while s means small image in mosaic aug.
                 (l_x1, l_y1, l_x2, l_y2), (s_x1, s_y1, s_x2, s_y2) = get_mosaic_coordinate(
@@ -196,7 +218,10 @@ class MosaicDetection(Dataset):
 
             mix_img = torch.from_numpy(mix_img).float()
             padded_labels = torch.from_numpy(padded_labels).float()
+<<<<<<< HEAD
             mix_img /= 255.0
+=======
+>>>>>>> ddd3e44 (update HW files)
             return mix_img, padded_labels
 
         else:
@@ -204,7 +229,10 @@ class MosaicDetection(Dataset):
             img, label = self.preproc(img, label, self.input_dim)
             img = torch.from_numpy(img).float()
             label = torch.from_numpy(label).float()
+<<<<<<< HEAD
             img /= 255.0
+=======
+>>>>>>> ddd3e44 (update HW files)
             return img, label
 
     def mixup(self, origin_img, origin_labels, input_dim):
@@ -217,9 +245,15 @@ class MosaicDetection(Dataset):
         img, cp_labels = self.get_sample(cp_index)
 
         if len(img.shape) == 3:
+<<<<<<< HEAD
             cp_img = np.ones((input_dim[0], input_dim[1], input_dim[2]), dtype=np.float32) * 114
         else:
             cp_img = np.ones(input_dim, dtype=np.float32) * 114
+=======
+            cp_img = np.ones((input_dim[0], input_dim[1], input_dim[2]), dtype=np.uint8) * 114
+        else:
+            cp_img = np.ones(input_dim, dtype=np.uint8) * 114
+>>>>>>> ddd3e44 (update HW files)
 
         cp_scale_ratio = min(input_dim[0] / img.shape[0], input_dim[1] / img.shape[1])
         resized_img = cv2.resize(
@@ -244,7 +278,11 @@ class MosaicDetection(Dataset):
         origin_h, origin_w = cp_img.shape[:2]
         target_h, target_w = origin_img.shape[:2]
         padded_img = np.zeros(
+<<<<<<< HEAD
             (max(origin_h, target_h), max(origin_w, target_w), input_dim[2]), dtype=np.float32
+=======
+            (max(origin_h, target_h), max(origin_w, target_w), input_dim[2]), dtype=np.uint8
+>>>>>>> ddd3e44 (update HW files)
         )
         padded_img[:origin_h, :origin_w] = cp_img
 
@@ -279,4 +317,8 @@ class MosaicDetection(Dataset):
         origin_img = origin_img.astype(np.float32)
         origin_img = 0.5 * origin_img + 0.5 * padded_cropped_img.astype(np.float32)
 
+<<<<<<< HEAD
         return origin_img.astype(np.float32), origin_labels
+=======
+        return origin_img.astype(np.uint8), origin_labels
+>>>>>>> ddd3e44 (update HW files)

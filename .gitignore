@@ -6,6 +6,17 @@ SW/checkpoints/
 SW/YOLOX
 SW/slurm
 
+# Model checkpoints (large files)
+*.ckpt
+*.pt
+*.pth
+
+# Vivado build outputs (generated, non-essential)
+HW/EventRecRep.runs/
+HW/EventRecRep.sim/
+HW/EventRecRep.cache/
+HW/EventRecRep.ip_user_files/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

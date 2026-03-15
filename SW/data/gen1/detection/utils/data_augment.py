@@ -15,7 +15,11 @@ import random
 import cv2
 import numpy as np
 
+<<<<<<< HEAD
 from YOLOX.yolox.utils import xyxy2cxcywh
+=======
+from yolox.utils import xyxy2cxcywh
+>>>>>>> ddd3e44 (update HW files)
 
 
 def augment_hsv(img, hgain=5, sgain=30, vgain=30):
@@ -168,10 +172,17 @@ class TrainTransform:
         boxes = targets[:, :4].copy()
         labels = targets[:, 4].copy()
 
+<<<<<<< HEAD
         mask_b = np.minimum(boxes[:,2] - boxes[:,0], boxes[:,3] - boxes[:,1]) > 1
         boxes = boxes[mask_b]
         labels = labels[mask_b]
 
+=======
+        mask_b = np.minimum(boxes[:, 2] - boxes[:,0], boxes[:, 3] - boxes[:,1]) > 1
+        boxes = boxes[mask_b]
+        labels = labels[mask_b]
+        
+>>>>>>> ddd3e44 (update HW files)
         if len(boxes) == 0:
             targets = np.zeros((self.max_labels, 5), dtype=np.float32)
             image, r_o = preproc(image, input_dim)
@@ -206,6 +217,7 @@ class TrainTransform:
 
         labels_t = np.expand_dims(labels_t, 1)
 
+<<<<<<< HEAD
         targets_t = np.hstack((boxes_t, labels_t))
         # targets: [cx, cy, w, h, label] 2 [x, y, w, h, label]
         targets_t[:, 0] = targets_t[:, 0] - targets_t[:, 2] / 2
@@ -216,6 +228,15 @@ class TrainTransform:
         # ]
         # padded_labels = np.ascontiguousarray(padded_labels, dtype=np.float32)
         return image_t, targets_t
+=======
+        targets_t = np.hstack((labels_t, boxes_t))
+        padded_labels = np.zeros((self.max_labels, 5))
+        padded_labels[range(len(targets_t))[: self.max_labels]] = targets_t[
+            : self.max_labels
+        ]
+        padded_labels = np.ascontiguousarray(padded_labels, dtype=np.float32)
+        return image_t, padded_labels
+>>>>>>> ddd3e44 (update HW files)
 
 
 class ValTransform:

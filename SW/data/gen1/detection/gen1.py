@@ -9,11 +9,15 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from data.gen1.detection.base import EventDatasetRepresentation
+from data.gen1.detection.base import EventDatasetRepresentation, TrainDataloader
+from data.gen1.detection.utils.mosaicdetection import MosaicDetection
 from representations.get_representation import get_item_transform
 from models.recurrent.encoder import Encoder
 
+<<<<<<< HEAD
 from data.gen1.detection.utils.mosaicdetection import MosaicDetection
+=======
+>>>>>>> ddd3e44 (update HW files)
 from data.gen1.detection.utils.data_augment import TrainTransform
 
 class Gen1(L.LightningDataModule):
@@ -145,14 +149,22 @@ class Gen1(L.LightningDataModule):
         base = Path(self.save_dir)
         if not base.exists():
             raise FileNotFoundError(f"Representation files not found at {base}")
+<<<<<<< HEAD
         
         self.train_data = MosaicDetection(base / "train.h5",   
                                           img_size=self.img_size,
                                             mosaic=True,
+=======
+        # self.train_data = EventDatasetRepresentation(base / "train.h5", self.cfg, augment=True)
+        self.val_data   = MosaicDetection(base / "val.h5",   
+                                          img_size=(224, 224, 12),
+                                          mixup_prob=0.0,
+>>>>>>> ddd3e44 (update HW files)
                                             preproc=TrainTransform(
                                                 max_labels=120,
                                                 flip_prob=0.5,
                                                 hsv_prob=0.0))
+<<<<<<< HEAD
         
         self.val_data   = MosaicDetection(base / "val.h5",   
                                           img_size=self.img_size,
@@ -169,6 +181,9 @@ class Gen1(L.LightningDataModule):
                                                 max_labels=120,
                                                 flip_prob=0.0,
                                                 hsv_prob=0.0))
+=======
+        # self.test_data  = EventDatasetRepresentation(base / "test.h5",  self.cfg, augment=False)
+>>>>>>> ddd3e44 (update HW files)
 
     def collate_fn(self, batch):
         reps, bbs = zip(*batch)

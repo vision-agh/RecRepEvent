@@ -108,6 +108,10 @@ class Gen1(L.LightningDataModule):
         super().__init__()
         self.cfg = cfg
 
+    def on_before_batch_transfer(self, batch, dataloader_idx):
+        # Here you can access self.train_dataset and modify it if needed
+        return batch
+    
     def prepare_data(self):
         os.makedirs(self.cfg["dir_to_save"], exist_ok=True)
         # enforce 'spawn' for true process isolation

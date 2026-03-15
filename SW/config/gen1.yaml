@@ -1,6 +1,6 @@
 name: Gen1
 data_dir: /net/storage/pr3/plgrid/plgg_dvs_phd/Detection/gen1
-dir_to_save: /net/scratch/hscra/plgrid/plgjeziorek/Datasets/gen1_processed
+dir_to_save: /home/imperator/Datasets/gen1_processed
 
 sensor_size:
   W: 304

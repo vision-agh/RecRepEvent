@@ -12,7 +12,7 @@ module top #(
     input   logic                               reset,
     input   logic [INPUT_BIT_X-1:0]             x_coord,
     input   logic [INPUT_BIT_Y-1:0]             y_coord,
-    input   logic [PRECISION-1:0]               timestamp,
+    input   logic [16-1:0]                      timestamp,
     input   logic                               is_valid, 
 
     output  logic [PRECISION * CHANNELS -1:0]   readback_output,
@@ -160,7 +160,7 @@ module top #(
     //       FORWARD LINEAR LAYER FOR INPUT - 2cc     //
     ////////////////////////////////////////////////////
     
-    logic signed [PRECISION:0]  input_signed [0:0];
+    logic signed [16:0]  input_signed [0:0];
     assign input_signed[0] = {1'b0, timestamp};
     
     logic [PRECISION-1:0]       lin_input  [(3*CHANNELS)-1:0];
@@ -170,6 +170,7 @@ module top #(
 
     matrix_multiplication #(
         .INPUT_DIM      ( 1 ),
+        .INPUT_PRECISION (16),
         .OUTPUT_DIM     ( 3*CHANNELS ),
         .PRECISION      ( PRECISION ),
         .MULTIPLIER     ( MULTIPLIER_LINEAR_INPUT ),
