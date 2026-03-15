@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GenRun Id="dist_mem_gen_3_synth_1" LaunchPart="xczu7ev-ffvc1156-2-e" LaunchTime="1745003510">
-  <File Type="VDS-TIMINGSUMMARY" Name="dist_mem_gen_3_timing_summary_synth.rpt"/>
   <File Type="RDS-DCP" Name="dist_mem_gen_3.dcp"/>
-  <File Type="RDS-UTIL-PB" Name="dist_mem_gen_3_utilization_synth.pb"/>
-  <File Type="RDS-UTIL" Name="dist_mem_gen_3_utilization_synth.rpt"/>
-  <File Type="VDS-TIMING-PB" Name="dist_mem_gen_3_timing_summary_synth.pb"/>
-  <File Type="PA-TCL" Name="dist_mem_gen_3.tcl"/>
-  <File Type="REPORTS-TCL" Name="dist_mem_gen_3_reports.tcl"/>
   <File Type="RDS-RDS" Name="dist_mem_gen_3.vds"/>
-  <File Type="RDS-PROPCONSTRS" Name="dist_mem_gen_3_drc_synth.rpt"/>
+  <File Type="REPORTS-TCL" Name="dist_mem_gen_3_reports.tcl"/>
+  <File Type="PA-TCL" Name="dist_mem_gen_3.tcl"/>
+  <File Type="RDS-UTIL" Name="dist_mem_gen_3_utilization_synth.rpt"/>
+  <File Type="RDS-UTIL-PB" Name="dist_mem_gen_3_utilization_synth.pb"/>
   <FileSet Name="sources" Type="BlockSrcs" RelSrcDir="$PSRCDIR/dist_mem_gen_3" RelGenDir="$PGENDIR/dist_mem_gen_3">
     <File Path="$PSRCDIR/sources_1/ip/dist_mem_gen_3/dist_mem_gen_3.xci">
       <FileInfo>
@@ -50,9 +47,7 @@
     </Config>
   </FileSet>
   <Strategy Version="1" Minor="2">
-    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2024">
-      <Desc>Vivado Synthesis Defaults</Desc>
-    </StratHandle>
+    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2024"/>
     <Step Id="synth_design"/>
   </Strategy>
 </GenRun>

@@ -1,7 +1,7 @@
-Running: xsim.dir/kamil_ut_behav/xsimk -simmode gui -wdb kamil_ut_behav.wdb -simrunnum 0 -socket 59601
+Running: xsim.dir/kamil_ut_behav/xsimk -simmode gui -wdb kamil_ut_behav.wdb -simrunnum 0 -socket 35995
 Design successfully loaded
-Design Loading Memory Usage: 201492 KB (Peak: 201492 KB)
-Design Loading CPU Usage: 630 ms
+Design Loading Memory Usage: 200580 KB (Peak: 200580 KB)
+Design Loading CPU Usage: 550 ms
 Simulation completed
-Simulation Memory Usage: 292108 KB (Peak: 340760 KB)
-Simulation CPU Usage: 650 ms
+Simulation Memory Usage: 291104 KB (Peak: 339848 KB)
+Simulation CPU Usage: 560 ms

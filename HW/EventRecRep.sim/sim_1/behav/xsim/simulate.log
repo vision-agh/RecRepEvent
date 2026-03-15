@@ -24,18 +24,6 @@ WARNING: This core is supplied with a behavioral model. To model cycle-accurate 
 WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
 WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
 WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
-WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
 WARNING: Too many words specified in data file dist_mem_gen_2.mif
 WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
 WARNING: Too many words specified in data file dist_mem_gen_2.mif
@@ -59,54 +47,30 @@ WARNING: This core is supplied with a behavioral model. To model cycle-accurate 
 WARNING: Too many words specified in data file dist_mem_gen_2.mif
 WARNING: This core is supplied with a behavioral model. To model cycle-accurate behavior you must run timing simulation.
 WARNING: Too many words specified in data file dist_mem_gen_2.mif
-WARNING in kamil_ut.uut.lut_vector_r[0].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[0].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[1].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[1].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[2].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[2].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[3].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[3].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[4].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[4].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[5].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[5].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[6].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[6].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[7].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[7].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[8].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[8].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[9].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[9].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[10].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[10].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_r[11].lut_sigmoid_r.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_r[11].lut_sigmoid_r.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[0].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[0].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[1].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[1].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[2].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[2].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[3].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[3].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[4].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[4].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[5].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[5].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[6].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[6].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[7].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[7].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[8].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[8].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[9].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[9].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[10].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[10].lut_sigmoid_z.inst is         511
-WARNING in kamil_ut.uut.lut_vector_z[11].lut_sigmoid_z.inst at time                25100 ns: 
-Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_z[11].lut_sigmoid_z.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[0].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[0].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[1].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[1].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[2].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[2].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[3].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[3].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[4].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[4].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[5].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[5].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[6].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[6].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[7].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[7].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[8].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[8].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[9].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[9].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[10].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[10].lut_sigmoid_r.inst is         511
+WARNING in kamil_ut.uut.lut_vector_f[11].lut_sigmoid_r.inst at time                25100 ns: 
+Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_f[11].lut_sigmoid_r.inst is         511
 WARNING in kamil_ut.uut.lut_vector_n[0].lut_tanh.inst at time                25100 ns: 
 Reading from out-of-range address. Max address in kamil_ut.uut.lut_vector_n[0].lut_tanh.inst is         511
 WARNING in kamil_ut.uut.lut_vector_n[1].lut_tanh.inst at time                25100 ns: 

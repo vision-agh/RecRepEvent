@@ -2,7 +2,6 @@
 verilog xil_defaultlib  \
 "../../../../EventRecRep.gen/sources_1/ip/dist_mem_gen_2/sim/dist_mem_gen_2.v" \
 "../../../../EventRecRep.gen/sources_1/ip/dist_mem_gen_3/sim/dist_mem_gen_3.v" \
-"../../../../EventRecRep.gen/sources_1/ip/dist_mem_gen_1/sim/dist_mem_gen_1.v" \
 "../../../../EventRecRep.gen/sources_1/ip/dist_mem_gen_0/sim/dist_mem_gen_0.v" \
 
 sv xil_defaultlib  \

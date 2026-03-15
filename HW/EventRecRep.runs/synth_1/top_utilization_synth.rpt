@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.2 (lin64) Build 5239630 Fri Nov 08 22:34:34 MST 2024
-| Date         : Fri Apr 18 22:53:05 2025
+| Date         : Thu May  1 18:44:14 2025
 | Host         : Imperator running 64-bit Ubuntu 24.04.2 LTS
 | Command      : report_utilization -file top_utilization_synth.rpt -pb top_utilization_synth.pb
 | Design       : top
@@ -32,15 +32,15 @@ Table of Contents
 +----------------------------+-------+-------+------------+-----------+-------+
 |          Site Type         |  Used | Fixed | Prohibited | Available | Util% |
 +----------------------------+-------+-------+------------+-----------+-------+
-| CLB LUTs*                  | 31187 |     0 |          0 |    230400 | 13.54 |
-|   LUT as Logic             | 30706 |     0 |          0 |    230400 | 13.33 |
+| CLB LUTs*                  | 52247 |     0 |          0 |    230400 | 22.68 |
+|   LUT as Logic             | 51766 |     0 |          0 |    230400 | 22.47 |
 |   LUT as Memory            |   481 |     0 |          0 |    101760 |  0.47 |
 |     LUT as Distributed RAM |     0 |     0 |            |           |       |
 |     LUT as Shift Register  |   481 |     0 |            |           |       |
-| CLB Registers              |  1456 |     0 |          0 |    460800 |  0.32 |
-|   Register as Flip Flop    |  1456 |     0 |          0 |    460800 |  0.32 |
+| CLB Registers              |  3774 |     0 |          0 |    460800 |  0.82 |
+|   Register as Flip Flop    |  3774 |     0 |          0 |    460800 |  0.82 |
 |   Register as Latch        |     0 |     0 |          0 |    460800 |  0.00 |
-| CARRY8                     |  4940 |     0 |          0 |     28800 | 17.15 |
+| CARRY8                     |  7323 |     0 |          0 |     28800 | 25.43 |
 | F7 Muxes                   |     0 |     0 |          0 |    115200 |  0.00 |
 | F8 Muxes                   |     0 |     0 |          0 |     57600 |  0.00 |
 | F9 Muxes                   |     0 |     0 |          0 |     28800 |  0.00 |
@@ -65,7 +65,7 @@ Warning! For any ECO changes, please run place_design if there are unplaced inst
 | 0     |          Yes |           - |          Set |
 | 0     |          Yes |           - |        Reset |
 | 0     |          Yes |         Set |            - |
-| 1456  |          Yes |       Reset |            - |
+| 3774  |          Yes |       Reset |            - |
 +-------+--------------+-------------+--------------+
 
 
@@ -90,8 +90,8 @@ Warning! For any ECO changes, please run place_design if there are unplaced inst
 +----------------+------+-------+------------+-----------+-------+
 |    Site Type   | Used | Fixed | Prohibited | Available | Util% |
 +----------------+------+-------+------------+-----------+-------+
-| DSPs           |  252 |     0 |          0 |      1728 | 14.58 |
-|   DSP48E2 only |  252 |       |            |           |       |
+| DSPs           |  108 |     0 |          0 |      1728 |  6.25 |
+|   DSP48E2 only |  108 |       |            |           |       |
 +----------------+------+-------+------------+-----------+-------+
 
 
@@ -101,7 +101,7 @@ Warning! For any ECO changes, please run place_design if there are unplaced inst
 +------------+------+-------+------------+-----------+-------+
 |  Site Type | Used | Fixed | Prohibited | Available | Util% |
 +------------+------+-------+------------+-----------+-------+
-| Bonded IOB |  136 |     0 |          0 |       360 | 37.78 |
+| Bonded IOB |  144 |     0 |          0 |       360 | 40.00 |
 +------------+------+-------+------------+-----------+-------+
 
 
@@ -161,20 +161,20 @@ Warning! For any ECO changes, please run place_design if there are unplaced inst
 +----------+-------+---------------------+
 | Ref Name |  Used | Functional Category |
 +----------+-------+---------------------+
-| LUT2     | 14585 |                 CLB |
-| LUT3     |  7559 |                 CLB |
-| LUT4     |  7146 |                 CLB |
-| CARRY8   |  4940 |                 CLB |
-| LUT1     |  4206 |                 CLB |
-| LUT5     |  3996 |                 CLB |
-| LUT6     |  3255 |                 CLB |
-| FDRE     |  1456 |            Register |
+| LUT2     | 21163 |                 CLB |
+| LUT3     | 15431 |                 CLB |
+| LUT4     | 10644 |                 CLB |
+| LUT6     |  7854 |                 CLB |
+| CARRY8   |  7323 |                 CLB |
+| LUT5     |  6930 |                 CLB |
+| LUT1     |  4438 |                 CLB |
+| FDRE     |  3774 |            Register |
 | SRL16E   |   481 |                 CLB |
-| DSP48E2  |   252 |          Arithmetic |
+| DSP48E2  |   108 |          Arithmetic |
 | OBUF     |    96 |                 I/O |
 | RAMB36E2 |    48 |            BLOCKRAM |
-| INBUF    |    40 |                 I/O |
-| IBUFCTRL |    40 |              Others |
+| INBUF    |    48 |                 I/O |
+| IBUFCTRL |    48 |              Others |
 | BUFGCE   |     1 |               Clock |
 +----------+-------+---------------------+
 

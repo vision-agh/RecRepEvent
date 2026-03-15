@@ -5,19 +5,21 @@ Running: /home/imperator/Xilinx/Vivado/2024.2/bin/unwrapped/lnx64.o/xelab --incr
 Using 8 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:372]
-WARNING: [VRFC 10-3091] actual bit length 32 differs from formal bit length 14 for port 'addra' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:62]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-9380] size mismatch in mixed-language port association of VHDL port 'a' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:315]
+WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 16 for port 'timestamp' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sim_1/new/test_top.sv:60]
+WARNING: [VRFC 10-3091] actual bit length 14 differs from formal bit length 16 for port 'readback_addr' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sim_1/new/test_top.sv:63]
+WARNING: [VRFC 10-3091] actual bit length 32 differs from formal bit length 16 for port 'addra' [/home/imperator/Code/RecRepEvent/HW/EventRecRep.srcs/sources_1/new/top.sv:62]
 Completed static elaboration
 Starting simulation data flow analysis
 Completed simulation data flow analysis
@@ -33,7 +35,7 @@ Compiling package c_addsub_v12_0_19.c_addsub_v12_0_19_pkg
 Compiling package c_addsub_v12_0_19.c_addsub_v12_0_19_pkg_legacy
 Compiling package c_reg_fd_v12_0_10.c_reg_fd_v12_0_10_viv_comp
 Compiling package unisim.vcomponents
-Compiling module xil_defaultlib.memory(AWIDTH=14,DWIDTH=96,RAM_T...
+Compiling module xil_defaultlib.memory(DWIDTH=96,RAM_TYPE="block...
 Compiling module xil_defaultlib.matrix_multiplication(INPUT_DIM=...
 Compiling module xil_defaultlib.matrix_multiplication(INPUT_DIM=...
 Compiling architecture structural of entity c_reg_fd_v12_0_10.c_reg_fd_v12_0_10_viv [\c_reg_fd_v12_0_10_viv(c_sync_pr...]
@@ -53,8 +55,6 @@ Compiling architecture xilinx of entity c_addsub_v12_0_19.c_addsub_v12_0_19 [\c_
 Compiling architecture c_addsub_0_arch of entity xil_defaultlib.c_addsub_0 [c_addsub_0_default]
 Compiling module dist_mem_gen_v8_0_15.dist_mem_gen_v8_0_15(C_FAMILY="z...
 Compiling module xil_defaultlib.dist_mem_gen_0
-Compiling module dist_mem_gen_v8_0_15.dist_mem_gen_v8_0_15(C_FAMILY="z...
-Compiling module xil_defaultlib.dist_mem_gen_1
 Compiling module xil_defaultlib.vector_multiplication(DIM=12)
 Compiling architecture structural of entity c_reg_fd_v12_0_10.c_reg_fd_v12_0_10_viv [\c_reg_fd_v12_0_10_viv(c_ainit_v...]
 Compiling architecture rtl of entity c_addsub_v12_0_19.c_addsub_v12_0_19_lut6_legacy [\c_addsub_v12_0_19_lut6_legacy(c...]
