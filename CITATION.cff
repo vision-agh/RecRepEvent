@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "Self-supervised event representations: towards accurate, real-time perception on SoC FPGAs"
+message: "If you use this software, please cite the related publication."
+type: software
+authors:
+  - family-names: "Jeziorek"
+    given-names: "Kamil"
+  - family-names: "Kryjak"
+    given-names: "Tomasz"
+preferred-citation:
+  type: paper-conference
+  doi: "10.1117/12.3056056"
+  title: "Self-supervised event representations: towards accurate, real-time perception on SoC FPGAs"
+  authors:
+    - family-names: "Jeziorek"
+      given-names: "Kamil"
+    - family-names: "Kryjak"
+      given-names: "Tomasz"
+  year: 2025
+  conference-title: "Real-time Processing of Image, Depth, and Video Information 2025"
+  volume: 13526
+  start: 1352602
+  publisher: "SPIE"
