@@ -213,3 +213,18 @@ Pre-trained weights are provided in `SW/checkpoints/`:
 ## Dataset
 
 The code targets the **Gen1 Prophesee** event camera dataset (304×240 resolution). Data is stored in HDF5 format and loaded lazily via `h5py`. Experiment tracking is handled by [Weights & Biases](https://wandb.ai).
+
+If you find the resources usefull, please cite the paper:
+
+
+```
+@inproceedings{jeziorek2025self,
+  title={Self-supervised event representations: towards accurate, real-time perception on SoC FPGAs},
+  author={Jeziorek, Kamil and Kryjak, Tomasz},
+  booktitle={Real-time Processing of Image, Depth, and Video Information 2025},
+  volume={13526},
+  pages={1352602},
+  year={2025},
+  organization={SPIE}
+}
+```
