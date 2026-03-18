@@ -193,7 +193,6 @@ The `HW/` directory contains a Xilinx Vivado project implementing the quantized 
 - Distributed memory and arithmetic IP cores
 - 8-bit fixed-point arithmetic matching the QAT model
 - LUT-based sigmoid/tanh approximations
-- Simulation support for Xsim, ModelSim, VCS, Xcelium, Questa, and Riviera
 
 Open `HW/EventRecRep.xpr` in Vivado to build or simulate.
 
