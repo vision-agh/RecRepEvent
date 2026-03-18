@@ -194,19 +194,6 @@ The `HW/` directory contains a Xilinx Vivado project implementing the quantized 
 - 8-bit fixed-point arithmetic matching the QAT model
 - LUT-based sigmoid/tanh approximations
 
-Open `HW/EventRecRep.xpr` in Vivado to build or simulate.
-
----
-
-## Checkpoints
-
-Pre-trained weights are provided in `SW/checkpoints/`:
-
-| File | Size | Description |
-|------|------|-------------|
-| `Detection_Gen1_Encoder.ckpt` | 242 MB | Detection with GRU encoder representation |
-| `Detection_Gen1_ToImage.ckpt` | 77 MB | Detection with polarity image representation |
-
 ---
 
 ## Dataset
